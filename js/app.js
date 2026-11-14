@@ -1,10 +1,12 @@
 /* ========================================================
    HỌC TỪ VỰNG TIẾNG NHẬT N4 — MINNA NO NIHONGO
-   Main Application Logic
+   Main Application Logic with LocalStorage Progress Tracking
    ======================================================== */
 
 (function () {
     'use strict';
+
+    var STORAGE_KEY = 'minna_vocab_progress_v2';
 
     // ---- DOM Elements ----
     var controlsSection     = null;
@@ -13,7 +15,10 @@
     var chipBtns            = null;
     var startBtn            = null;
     var romajiConvertCheck  = null;
-    var quizModeInputs      = null;
+    var resetCatBtn         = null;
+    var statUnlearned       = null;
+    var statLearned         = null;
+    var statReview          = null;
 
     var quizSection         = null;
     var quizTitle           = null;
@@ -34,12 +39,14 @@
     var correctCountEl      = null;
     var wrongCountEl        = null;
     var percentageEl        = null;
+    var savedProgressText   = null;
 
     // ---- State ----
-    var currentData = [];
-    var wrongData   = [];
-    var quizMode    = 'nihongo';
-    var isChecked   = false;
+    var currentCategory = '';
+    var currentData     = [];
+    var wrongData       = [];
+    var quizMode        = 'nihongo';
+    var isChecked       = false;
 
     // Display labels for quiz columns
     var columnNames = {
@@ -61,7 +68,10 @@
         chipBtns           = document.querySelectorAll('.chip-btn');
         startBtn           = document.getElementById('start-btn');
         romajiConvertCheck = document.getElementById('romaji-convert-check');
-        quizModeInputs     = document.querySelectorAll('input[name="quiz-mode"]');
+        resetCatBtn        = document.getElementById('reset-cat-btn');
+        statUnlearned      = document.getElementById('stat-unlearned');
+        statLearned        = document.getElementById('stat-learned');
+        statReview         = document.getElementById('stat-review');
 
         quizSection        = document.getElementById('quiz-section');
         quizTitle          = document.getElementById('quiz-title');
@@ -82,14 +92,74 @@
         correctCountEl     = document.getElementById('correct-count');
         wrongCountEl       = document.getElementById('wrong-count');
         percentageEl       = document.getElementById('percentage');
+        savedProgressText  = document.getElementById('saved-progress-text');
 
-        // Set default limit input to 20
         if (limitInput) {
-            limitInput.value = '20';
+            limitInput.value = '25';
         }
 
         populateCategories();
         bindEvents();
+        updateCategoryStatsUI();
+    }
+
+    // ========================================================
+    //  LocalStorage Progress Management (Ý TƯỞNG 1)
+    // ========================================================
+
+    function getWordKey(category, word) {
+        return category + '__' + word.nihongo + '__' + (word.kanji || '—');
+    }
+
+    function loadProgress() {
+        try {
+            var data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : {};
+        } catch (e) {
+            return {};
+        }
+    }
+
+    function saveProgress(progress) {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+        } catch (e) {}
+    }
+
+    function getWordStatus(progress, category, word) {
+        var k = getWordKey(category, word);
+        return progress[k] ? progress[k].status : 'unlearned'; // 'unlearned' | 'learned' | 'review'
+    }
+
+    function getCategoryProgress(category) {
+        var progress = loadProgress();
+        var items = vocabData[category] || [];
+        var unlearned = 0;
+        var learned = 0;
+        var review = 0;
+
+        items.forEach(function (it) {
+            var st = getWordStatus(progress, category, it);
+            if (st === 'learned') learned++;
+            else if (st === 'review') review++;
+            else unlearned++;
+        });
+
+        return {
+            total: items.length,
+            unlearned: unlearned,
+            learned: learned,
+            review: review
+        };
+    }
+
+    function updateCategoryStatsUI() {
+        if (!categorySelect) return;
+        var cat = categorySelect.value;
+        var stats = getCategoryProgress(cat);
+        if (statUnlearned) statUnlearned.textContent = stats.unlearned;
+        if (statLearned) statLearned.textContent = stats.learned;
+        if (statReview) statReview.textContent = stats.review;
     }
 
     // ========================================================
@@ -114,6 +184,8 @@
     // ========================================================
 
     function bindEvents() {
+        categorySelect.addEventListener('change', updateCategoryStatsUI);
+
         startBtn.addEventListener('click', function () {
             startQuiz(false);
         });
@@ -122,6 +194,23 @@
         resetBtn.addEventListener('click', resetQuiz);
         showAnswersBtn.addEventListener('click', revealAllAnswers);
         backBtn.addEventListener('click', goBack);
+
+        // Reset progress of currently selected category
+        resetCatBtn.addEventListener('click', function () {
+            var cat = categorySelect.value;
+            var catName = categoryLabels[cat] || 'bộ từ này';
+            var msg = 'Bạn có chắc chắn muốn xóa tiến độ của ' + catName + ' để học lại từ đầu?';
+            if (window.confirm(msg)) {
+                var progress = loadProgress();
+                var items = vocabData[cat] || [];
+                items.forEach(function (it) {
+                    delete progress[getWordKey(cat, it)];
+                });
+                saveProgress(progress);
+                updateCategoryStatsUI();
+                alert('Đã đặt lại tiến độ của ' + catName + ' thành công!');
+            }
+        });
 
         retryWrongBtn.addEventListener('click', function () {
             if (wrongData.length > 0) {
@@ -145,7 +234,6 @@
             });
         });
 
-        // Sync chips when user types manually into input
         if (limitInput) {
             limitInput.addEventListener('input', function () {
                 var val = limitInput.value.trim();
@@ -159,7 +247,18 @@
             });
         }
 
-        // Mode cards visual toggle
+        // Filter cards visual toggle (Ý TƯỞNG 1)
+        var filterCards = document.querySelectorAll('.filter-card');
+        filterCards.forEach(function (card) {
+            card.addEventListener('click', function () {
+                filterCards.forEach(function (c) { c.classList.remove('active'); });
+                card.classList.add('active');
+                var radio = card.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+            });
+        });
+
+        // Mode cards visual toggle (4 cột)
         var modeCards = document.querySelectorAll('.mode-card');
         modeCards.forEach(function (card) {
             card.addEventListener('click', function () {
@@ -172,7 +271,7 @@
     }
 
     // ========================================================
-    //  Shuffle (Fisher-Yates) — TỰ ĐỘNG XÁO TRỘN THEO YÊU CẦU
+    //  Shuffle (Fisher-Yates) — TỰ ĐỘNG XÁO TRỘN
     // ========================================================
 
     function shuffleArray(arr) {
@@ -236,7 +335,6 @@
         for (var i = 0; i < table.length; i++) {
             s = s.split(table[i][0]).join(table[i][1]);
         }
-        // Lone n before consonants or end of word
         s = s.replace(/n(?=[^aeiouy\s]|$)/g, 'ん');
         return s;
     }
@@ -256,16 +354,16 @@
     }
 
     // ========================================================
-    //  Start Quiz
+    //  Start Quiz (XỬ LÝ LỌC TRẠNG THÁI TIẾN ĐỘ)
     // ========================================================
 
     function startQuiz(isRetry) {
-        var category = categorySelect.value;
+        currentCategory = categorySelect.value;
         var selectedMode = document.querySelector('input[name="quiz-mode"]:checked');
         quizMode = selectedMode ? selectedMode.value : 'nihongo';
 
         if (!isRetry) {
-            var rawList = (vocabData[category] || []).map(function (item) {
+            var rawList = (vocabData[currentCategory] || []).map(function (item) {
                 return {
                     nihongo: item.nihongo,
                     vietnam: item.vietnam,
@@ -274,8 +372,46 @@
                 };
             });
 
-            // TỰ ĐỘNG XÁO TRỘN THỨ TỰ TỪ (AUTO SHUFFLE)
-            rawList = shuffleArray(rawList);
+            // Lọc theo Chế độ tiến độ (Ý TƯỞNG 1)
+            var filterModeRadio = document.querySelector('input[name="filter-mode"]:checked');
+            var filterMode = filterModeRadio ? filterModeRadio.value : 'unlearned';
+            var progress = loadProgress();
+
+            var filteredList = [];
+            if (filterMode === 'unlearned') {
+                // CHỈ LẤY TỪ MỚI CHƯA TỪNG HỌC
+                filteredList = rawList.filter(function (it) {
+                    return getWordStatus(progress, currentCategory, it) === 'unlearned';
+                });
+                if (filteredList.length === 0) {
+                    alert('🎉 Chúc mừng bạn!\nBạn đã học hết toàn bộ từ mới trong ' + categoryLabels[currentCategory] + ' rồi!\nHãy chuyển sang chế độ "Ôn từ đã thuộc" hoặc "Học kèm từ cũ" để củng cố nhé.');
+                    return;
+                }
+            } else if (filterMode === 'review') {
+                // CHỈ ÔN CÁC TỪ TỪNG LÀM SAI
+                filteredList = rawList.filter(function (it) {
+                    return getWordStatus(progress, currentCategory, it) === 'review';
+                });
+                if (filteredList.length === 0) {
+                    alert('🌟 Tuyệt vời! Bạn không có từ nào cần ôn (không có từ nào bị sai trước đó trong bộ này).');
+                    return;
+                }
+            } else if (filterMode === 'learned') {
+                // ÔN TỪ ĐÃ THUỘC
+                filteredList = rawList.filter(function (it) {
+                    return getWordStatus(progress, currentCategory, it) === 'learned';
+                });
+                if (filteredList.length === 0) {
+                    alert('Bạn chưa có từ nào đạt trạng thái "Đã thuộc" trong bộ này. Hãy chọn "Chỉ học từ MỚI" trước nhé!');
+                    return;
+                }
+            } else {
+                // 'all': HỌC KÈM CẢ MỚI VÀ CŨ
+                filteredList = rawList.slice();
+            }
+
+            // Tự động xáo trộn ngẫu nhiên
+            filteredList = shuffleArray(filteredList);
 
             // Áp dụng số lượng từ người dùng điền vào ô
             if (limitInput) {
@@ -283,12 +419,12 @@
                 if (limitVal !== '') {
                     var parsedLimit = parseInt(limitVal, 10);
                     if (!isNaN(parsedLimit) && parsedLimit > 0) {
-                        rawList = rawList.slice(0, parsedLimit);
+                        filteredList = filteredList.slice(0, parsedLimit);
                     }
                 }
             }
 
-            currentData = rawList;
+            currentData = filteredList;
         }
 
         wrongData = [];
@@ -296,7 +432,7 @@
         hide(retryWrongBtn);
 
         // Update headers
-        quizTitle.textContent = categoryLabels[category] || 'Từ vựng';
+        quizTitle.textContent = categoryLabels[currentCategory] || 'Từ vựng';
         quizBadge.textContent = 'Đang học: ' + columnNames[quizMode];
         quizCounter.textContent = '0 / ' + currentData.length + ' từ';
         updateProgress();
@@ -356,7 +492,6 @@
                 if (col === quizMode) {
                     td.className = 'input-cell';
 
-                    // If word has no answer for this field (e.g. "—")
                     if (!cellValue || cellValue === '—' || cellValue === '-') {
                         td.textContent = '—';
                         td.className = 'td-empty';
@@ -428,7 +563,6 @@
             vocabBody.appendChild(tr);
         });
 
-        // Auto focus first input
         requestAnimationFrame(function () {
             var firstInput = document.querySelector('.quiz-input');
             if (firstInput) firstInput.focus();
@@ -465,8 +599,8 @@
             .toString()
             .trim()
             .toLowerCase()
-            .replace(/[\s\u3000]+/g, '')   // remove all whitespace
-            .replace(/[~～]/g, '')         // normalize tilde
+            .replace(/[\s\u3000]+/g, '')
+            .replace(/[~～]/g, '')
             .replace(/[.,:;?!/\\()\[\]'"`]/g, '');
     }
 
@@ -474,20 +608,17 @@
         if (!rawAnswer) return [];
         var list = [rawAnswer];
 
-        // Split by / or , or ;
         var parts = rawAnswer.split(/[/,;、，]/);
         parts.forEach(function (part) {
             var trimmed = part.trim();
             if (trimmed) {
                 list.push(trimmed);
 
-                // Without parentheses: "đến trễ (muộn)" -> "đến trễ"
                 var withoutParen = trimmed.replace(/\([^)]*\)/g, '').trim();
                 if (withoutParen && withoutParen !== trimmed) {
                     list.push(withoutParen);
                 }
 
-                // Inside parentheses: "đến trễ (muộn)" -> "muộn"
                 var match = trimmed.match(/\(([^)]+)\)/);
                 if (match && match[1]) {
                     list.push(match[1].trim());
@@ -503,7 +634,6 @@
         var normUser = normalizeText(userAnswer);
         if (!normUser) return false;
 
-        // If user typed romaji for Japanese, test converted hiragana
         var normRomajiUser = normalizeText(romajiToHiragana(userAnswer));
 
         var candidates = getAnswerCandidates(rawAnswer);
@@ -517,7 +647,7 @@
     }
 
     // ========================================================
-    //  Check Answers
+    //  Check Answers & Save Progress to LocalStorage
     // ========================================================
 
     function checkAnswers() {
@@ -529,11 +659,14 @@
         var wrong   = 0;
         wrongData   = [];
 
+        var progress = loadProgress();
+
         inputs.forEach(function (input) {
             var answer     = input.getAttribute('data-answer');
             var userAnswer = input.value;
             var rowIndex   = parseInt(input.getAttribute('data-index'), 10);
             var td         = input.parentElement;
+            var word       = currentData[rowIndex];
 
             var correctMatch = isMatch(userAnswer, answer);
 
@@ -543,6 +676,18 @@
                 input.classList.add('input-correct');
                 td.classList.add('cell-correct');
                 correct++;
+
+                // Cập nhật trạng thái "Đã thuộc" (learned)
+                if (word) {
+                    var k = getWordKey(currentCategory, word);
+                    var prev = progress[k] || { correct: 0, wrong: 0 };
+                    progress[k] = {
+                        status: 'learned',
+                        correct: (prev.correct || 0) + 1,
+                        wrong: prev.wrong || 0,
+                        updatedAt: Date.now()
+                    };
+                }
             } else {
                 // SAI MÀU ĐỎ
                 input.classList.remove('input-correct');
@@ -550,12 +695,22 @@
                 td.classList.add('cell-wrong');
                 wrong++;
 
-                // Track wrong items for retry
+                // Cập nhật trạng thái "Cần ôn lại" (review)
+                if (word) {
+                    var k = getWordKey(currentCategory, word);
+                    var prev = progress[k] || { correct: 0, wrong: 0 };
+                    progress[k] = {
+                        status: 'review',
+                        correct: prev.correct || 0,
+                        wrong: (prev.wrong || 0) + 1,
+                        updatedAt: Date.now()
+                    };
+                }
+
                 if (!isNaN(rowIndex) && currentData[rowIndex]) {
                     wrongData.push(currentData[rowIndex]);
                 }
 
-                // Show correct answer badge
                 var hint = document.createElement('div');
                 hint.className = 'answer-hint';
                 hint.textContent = '→ ' + answer;
@@ -564,6 +719,10 @@
 
             input.disabled = true;
         });
+
+        // Lưu tiến độ vào LocalStorage
+        saveProgress(progress);
+        updateCategoryStatsUI();
 
         // Update stats
         var total = correct + wrong;
@@ -577,22 +736,29 @@
         if (pct === 100) {
             resultTrophy.textContent = '🏆';
             resultMessage.textContent = 'Hoàn hảo tuyệt đối 100%! Xuất sắc!';
-            resultSubtext.textContent = 'Bạn đã thuộc trọn vẹn bộ từ này!';
+            resultSubtext.textContent = 'Toàn bộ từ trong bài đã được đánh dấu là "Đã thuộc" vào bộ nhớ!';
         } else if (pct >= 80) {
             resultTrophy.textContent = '🌟';
             resultMessage.textContent = 'Làm rất tốt! Bạn đã nắm chắc kiến thức!';
-            resultSubtext.textContent = 'Chỉ còn vài từ cần ôn lại một chút thôi.';
+            resultSubtext.textContent = 'Các từ đúng đã được ghi nhận thuộc, từ sai sẽ được lưu vào mục "Cần ôn".';
         } else if (pct >= 50) {
             resultTrophy.textContent = '👍';
             resultMessage.textContent = 'Khá tốt! Hãy tiếp tục luyện tập nhé!';
-            resultSubtext.textContent = 'Bấm "Ôn lại các câu sai" để ghi nhớ sâu hơn.';
+            resultSubtext.textContent = 'Bấm "Ôn lại các câu sai" để củng cố ngay những từ chưa thuộc.';
         } else {
             resultTrophy.textContent = '💪';
             resultMessage.textContent = 'Đừng nản lòng! Vạn sự khởi đầu nan!';
-            resultSubtext.textContent = 'Hãy xem lại đáp án và làm lại để thuộc lòng nhé.';
+            resultSubtext.textContent = 'Các từ sai đã được lưu lại để bạn có thể ôn riêng sau này.';
         }
 
-        // Show retry button if any wrong
+        // Cập nhật banner tổng tiến độ đã lưu
+        var updatedStats = getCategoryProgress(currentCategory);
+        if (savedProgressText) {
+            savedProgressText.innerHTML = '💾 <strong>Đã lưu tiến độ vào máy!</strong> ' + 
+                categoryLabels[currentCategory] + ' hiện có: <strong>' + updatedStats.learned + '</strong> từ đã thuộc, ' +
+                '<strong>' + updatedStats.review + '</strong> từ cần ôn, còn <strong>' + updatedStats.unlearned + '</strong> từ mới.';
+        }
+
         if (wrongData.length > 0) {
             retryWrongBtn.querySelector('.btn-icon').textContent = '🔁';
             retryWrongBtn.childNodes[1].textContent = ' Ôn Lại ' + wrongData.length + ' Câu Sai';
@@ -635,7 +801,6 @@
         wrongData = [];
         hide(retryWrongBtn);
 
-        // Auto shuffle again on reset
         currentData = shuffleArray(currentData);
 
         renderTable();
@@ -651,6 +816,7 @@
         hide(quizSection);
         hide(resultSection);
         show(controlsSection);
+        updateCategoryStatsUI();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 

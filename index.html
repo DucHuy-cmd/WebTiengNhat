@@ -32,6 +32,22 @@
                         <span class="label-icon">📂</span> Chọn bộ từ:
                     </label>
                     <select id="category-select" class="select-control"></select>
+
+                    <!-- Tiến độ của bộ từ đang chọn -->
+                    <div class="category-progress-bar" id="category-progress-bar">
+                        <span class="prog-pill prog-unlearned" title="Từ chưa từng học trong bộ này">
+                            ⚪ Chưa học: <strong id="stat-unlearned">0</strong>
+                        </span>
+                        <span class="prog-pill prog-learned" title="Từ đã trả lời đúng">
+                            🟢 Đã thuộc: <strong id="stat-learned">0</strong>
+                        </span>
+                        <span class="prog-pill prog-review" title="Từ từng trả lời sai, cần ôn lại">
+                            🔴 Cần ôn: <strong id="stat-review">0</strong>
+                        </span>
+                        <button type="button" id="reset-cat-btn" class="btn-text-ghost" title="Xóa tiến độ của riêng bộ từ này để học lại từ đầu">
+                            🗑️ Đặt lại
+                        </button>
+                    </div>
                 </div>
 
                 <div class="form-group flex-1">
@@ -42,12 +58,56 @@
                         <input type="number" id="limit-input" class="input-control" min="1" max="500" placeholder="Nhập số từ (để trống = tất cả)">
                         <div class="quick-limits">
                             <button type="button" class="chip-btn" data-val="10">10</button>
-                            <button type="button" class="chip-btn active" data-val="20">20</button>
-                            <button type="button" class="chip-btn" data-val="30">30</button>
+                            <button type="button" class="chip-btn" data-val="20">20</button>
+                            <button type="button" class="chip-btn active" data-val="25">25</button>
                             <button type="button" class="chip-btn" data-val="50">50</button>
                             <button type="button" class="chip-btn" data-val="">Tất cả</button>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- CHẾ ĐỘ LỌC THÔNG MINH (Ý TƯỞNG 1) -->
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-icon">🧠</span> Chế độ học &amp; Tiến độ ghi nhớ:
+                </label>
+                <div class="filter-mode-grid" id="filter-mode-group">
+                    <label class="filter-card active" data-mode="unlearned">
+                        <input type="radio" name="filter-mode" value="unlearned" checked>
+                        <div class="filter-icon">✨</div>
+                        <div class="filter-info">
+                            <span class="filter-title">Chỉ học từ MỚI</span>
+                            <span class="filter-desc">100% không trùng từ đã học</span>
+                        </div>
+                    </label>
+
+                    <label class="filter-card" data-mode="all">
+                        <input type="radio" name="filter-mode" value="all">
+                        <div class="filter-icon">🔄</div>
+                        <div class="filter-info">
+                            <span class="filter-title">Học kèm từ cũ</span>
+                            <span class="filter-desc">Bốc ngẫu nhiên cả mới và cũ</span>
+                        </div>
+                    </label>
+
+                    <label class="filter-card" data-mode="review">
+                        <input type="radio" name="filter-mode" value="review">
+                        <div class="filter-icon">🔴</div>
+                        <div class="filter-info">
+                            <span class="filter-title">Chỉ ôn từ hay sai</span>
+                            <span class="filter-desc">Luyện lại các câu chưa thuộc</span>
+                        </div>
+                    </label>
+
+                    <label class="filter-card" data-mode="learned">
+                        <input type="radio" name="filter-mode" value="learned">
+                        <div class="filter-icon">🟢</div>
+                        <div class="filter-info">
+                            <span class="filter-title">Ôn từ đã thuộc</span>
+                            <span class="filter-desc">Củng cố trí nhớ dài hạn</span>
+                        </div>
+                    </label>
                 </div>
             </div>
 
@@ -201,12 +261,17 @@
                         <div class="stat-title">Tỷ Lệ Đúng</div>
                     </div>
                 </div>
+
+                <!-- Thống kê tổng tiến độ đã lưu -->
+                <div class="saved-progress-banner" id="saved-progress-banner">
+                    <span id="saved-progress-text">Đã cập nhật tiến độ vào bộ nhớ học tập!</span>
+                </div>
             </div>
         </section>
     </main>
 
     <footer class="app-footer">
-        <p>📘 Web Học Từ Vựng N4 &bull; Dữ liệu theo giáo trình <strong>Minna no Nihongo</strong></p>
+        <p>📘 Web Học Từ Vựng N4 &bull; Dữ liệu theo giáo trình <strong>Minna no Nihongo (Bài 1–50)</strong></p>
     </footer>
 
     <!-- Scripts -->
