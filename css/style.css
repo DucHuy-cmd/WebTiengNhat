@@ -63,8 +63,7 @@ html {
 
 body {
     font-family: var(--font-sans);
-    background: url('../assets/bg.png') no-repeat center center fixed;
-    background-size: cover;
+    background: linear-gradient(180deg, #edf6fc 0%, #f4f8fb 240px, #f8fafc 100%);
     color: var(--gray-800);
     min-height: 100vh;
     display: flex;
@@ -128,8 +127,8 @@ body {
     background: var(--white);
     border-radius: var(--radius-lg);
     padding: 2rem 2.25rem;
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(11, 136, 192, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(11, 136, 192, 0.15);
 }
 
 .card-title {
@@ -460,7 +459,7 @@ body {
     background: var(--white);
     padding: 0.75rem 1.25rem;
     border-radius: var(--radius-md);
-    border: 1px solid var(--gray-200);
+    border: 1px solid rgba(11, 136, 192, 0.15);
     box-shadow: var(--shadow-sm);
 }
 
@@ -521,8 +520,8 @@ body {
 .table-container {
     background: var(--white);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--gray-200);
+    box-shadow: 0 4px 20px rgba(11, 136, 192, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(11, 136, 192, 0.15);
     overflow-x: auto;
     margin-bottom: 1.5rem;
 }
@@ -712,8 +711,8 @@ td.cell-wrong {
     background: var(--white);
     border-radius: var(--radius-lg);
     padding: 2.5rem 1.5rem;
-    border: 1px solid var(--gray-200);
-    box-shadow: var(--shadow-lg);
+    border: 1px solid rgba(11, 136, 192, 0.15);
+    box-shadow: 0 4px 20px rgba(11, 136, 192, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
     text-align: center;
 }
 
