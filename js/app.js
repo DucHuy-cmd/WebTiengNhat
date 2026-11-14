@@ -105,6 +105,70 @@
         populateCategories();
         bindEvents();
         updateCategoryStatsUI();
+        initPwaHandlers();
+    }
+
+    // ========================================================
+    //  PWA Install Prompt & Modal Handling
+    // ========================================================
+    var deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        var pwaDirectBtn = document.getElementById('pwa-direct-install-btn');
+        if (pwaDirectBtn) {
+            pwaDirectBtn.classList.remove('hidden');
+        }
+    });
+
+    function initPwaHandlers() {
+        var pwaInstallBtn = document.getElementById('pwa-install-btn');
+        var pwaModal = document.getElementById('pwa-modal');
+        var pwaModalBackdrop = document.getElementById('pwa-modal-backdrop');
+        var closePwaModalBtn = document.getElementById('close-pwa-modal-btn');
+        var pwaModalDismissBtn = document.getElementById('pwa-modal-dismiss-btn');
+        var pwaDirectInstallBtn = document.getElementById('pwa-direct-install-btn');
+
+        function openModal() {
+            if (pwaModal) pwaModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            if (pwaModal) pwaModal.classList.add('hidden');
+        }
+
+        if (pwaInstallBtn) {
+            pwaInstallBtn.addEventListener('click', function () {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(function (result) {
+                        if (result && result.outcome === 'accepted') {
+                            console.log('App install accepted');
+                        }
+                        deferredPrompt = null;
+                    });
+                } else {
+                    openModal();
+                }
+            });
+        }
+
+        if (pwaDirectInstallBtn) {
+            pwaDirectInstallBtn.addEventListener('click', function () {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then(function () {
+                        deferredPrompt = null;
+                        closeModal();
+                    });
+                }
+            });
+        }
+
+        if (closePwaModalBtn) closePwaModalBtn.addEventListener('click', closeModal);
+        if (pwaModalDismissBtn) pwaModalDismissBtn.addEventListener('click', closeModal);
+        if (pwaModalBackdrop) pwaModalBackdrop.addEventListener('click', closeModal);
     }
 
     // ========================================================

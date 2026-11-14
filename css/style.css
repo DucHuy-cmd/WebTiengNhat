@@ -1042,3 +1042,183 @@ td.cell-wrong {
         align-items: flex-start;
     }
 }
+
+/* ========================================================
+   PWA INSTALL BUTTON & MODAL
+   ======================================================== */
+
+.header-pwa-btn {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.42rem 0.9rem;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.header-pwa-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.header-pwa-btn:active {
+    transform: translateY(0);
+}
+
+.pwa-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.pwa-modal.hidden {
+    display: none;
+}
+
+.pwa-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.pwa-modal-card {
+    position: relative;
+    background: #ffffff;
+    width: 100%;
+    max-width: 520px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.94) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.pwa-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.1rem 1.4rem;
+    background: linear-gradient(90deg, #f0f8fd 0%, #ffffff 100%);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.pwa-modal-header h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--blue-start);
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: var(--gray-400);
+    cursor: pointer;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+}
+
+.modal-close-btn:hover {
+    color: var(--gray-700);
+    background: var(--gray-100);
+}
+
+.pwa-modal-body {
+    padding: 1.3rem 1.4rem;
+    max-height: 70vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.pwa-guide-box {
+    background: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.1rem;
+}
+
+.pwa-guide-box.ios-box {
+    background: #f0f9ff;
+    border-color: #bae6fd;
+}
+
+.pwa-platform-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    margin-bottom: 0.6rem;
+}
+
+.pwa-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.8rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.pwa-steps li {
+    font-size: 0.88rem;
+    color: var(--gray-700);
+    line-height: 1.45;
+}
+
+.pwa-steps strong {
+    color: var(--blue-start);
+}
+
+.pwa-highlight-tip {
+    font-size: 0.85rem;
+    line-height: 1.45;
+    background: #e0f2fe;
+    border-left: 3px solid var(--blue-start);
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    color: #0369a1;
+}
+
+.pwa-android-text {
+    font-size: 0.88rem;
+    color: var(--gray-700);
+    line-height: 1.45;
+}
+
+.pwa-modal-footer {
+    padding: 0.9rem 1.4rem;
+    background: #f8fafc;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
