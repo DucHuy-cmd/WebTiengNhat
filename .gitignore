@@ -7,3 +7,4 @@ Thumbs.db
 *.txt
 *.yaml
 *.csv
+__pycache__/
