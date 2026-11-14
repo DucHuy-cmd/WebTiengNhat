@@ -13,6 +13,8 @@
     var categorySelect      = null;
     var limitInput          = null;
     var chipBtns            = null;
+    var filterModeSelect    = null;
+    var quizModeSelect      = null;
     var startBtn            = null;
     var romajiConvertCheck  = null;
     var resetCatBtn         = null;
@@ -66,6 +68,8 @@
         categorySelect     = document.getElementById('category-select');
         limitInput         = document.getElementById('limit-input');
         chipBtns           = document.querySelectorAll('.chip-btn');
+        filterModeSelect   = document.getElementById('filter-mode-select');
+        quizModeSelect     = document.getElementById('quiz-mode-select');
         startBtn           = document.getElementById('start-btn');
         romajiConvertCheck = document.getElementById('romaji-convert-check');
         resetCatBtn        = document.getElementById('reset-cat-btn');
@@ -104,7 +108,7 @@
     }
 
     // ========================================================
-    //  LocalStorage Progress Management (Ý TƯỞNG 1)
+    //  LocalStorage Progress Management
     // ========================================================
 
     function getWordKey(category, word) {
@@ -246,28 +250,6 @@
                 });
             });
         }
-
-        // Filter cards visual toggle (Ý TƯỞNG 1)
-        var filterCards = document.querySelectorAll('.filter-card');
-        filterCards.forEach(function (card) {
-            card.addEventListener('click', function () {
-                filterCards.forEach(function (c) { c.classList.remove('active'); });
-                card.classList.add('active');
-                var radio = card.querySelector('input[type="radio"]');
-                if (radio) radio.checked = true;
-            });
-        });
-
-        // Mode cards visual toggle (4 cột)
-        var modeCards = document.querySelectorAll('.mode-card');
-        modeCards.forEach(function (card) {
-            card.addEventListener('click', function () {
-                modeCards.forEach(function (c) { c.classList.remove('active'); });
-                card.classList.add('active');
-                var radio = card.querySelector('input[type="radio"]');
-                if (radio) radio.checked = true;
-            });
-        });
     }
 
     // ========================================================
@@ -286,13 +268,24 @@
     }
 
     // ========================================================
+    //  Katakana <-> Hiragana Converter (FIX BUG KATAKANA)
+    // ========================================================
+
+    function katakanaToHiragana(str) {
+        if (!str) return '';
+        return str.replace(/[\u30a1-\u30f6]/g, function (ch) {
+            return String.fromCharCode(ch.charCodeAt(0) - 0x60);
+        });
+    }
+
+    // ========================================================
     //  Romaji to Hiragana Converter
     // ========================================================
 
     function romajiToHiragana(str) {
         if (!str) return '';
         var s = str.toLowerCase().trim();
-        s = s.replace(/~/g, '～').replace(/-/g, 'ー');
+        s = s.replace(/~/g, '～').replace(/[-–—_]/g, 'ー');
 
         // Double consonants (sokuon: kk, tt, ss, pp, etc. except nn)
         s = s.replace(/([bcdfghjklmpqrstvwxyz])\1/g, function (match, char) {
@@ -354,13 +347,12 @@
     }
 
     // ========================================================
-    //  Start Quiz (XỬ LÝ LỌC TRẠNG THÁI TIẾN ĐỘ)
+    //  Start Quiz (XỬ LÝ DROPDOWN CHẾ ĐỘ VÀ CỘT HỌC)
     // ========================================================
 
     function startQuiz(isRetry) {
         currentCategory = categorySelect.value;
-        var selectedMode = document.querySelector('input[name="quiz-mode"]:checked');
-        quizMode = selectedMode ? selectedMode.value : 'nihongo';
+        quizMode = quizModeSelect ? quizModeSelect.value : 'nihongo';
 
         if (!isRetry) {
             var rawList = (vocabData[currentCategory] || []).map(function (item) {
@@ -372,14 +364,12 @@
                 };
             });
 
-            // Lọc theo Chế độ tiến độ (Ý TƯỞNG 1)
-            var filterModeRadio = document.querySelector('input[name="filter-mode"]:checked');
-            var filterMode = filterModeRadio ? filterModeRadio.value : 'unlearned';
+            // Lọc theo Chế độ tiến độ
+            var filterMode = filterModeSelect ? filterModeSelect.value : 'unlearned';
             var progress = loadProgress();
 
             var filteredList = [];
             if (filterMode === 'unlearned') {
-                // CHỈ LẤY TỪ MỚI CHƯA TỪNG HỌC
                 filteredList = rawList.filter(function (it) {
                     return getWordStatus(progress, currentCategory, it) === 'unlearned';
                 });
@@ -388,7 +378,6 @@
                     return;
                 }
             } else if (filterMode === 'review') {
-                // CHỈ ÔN CÁC TỪ TỪNG LÀM SAI
                 filteredList = rawList.filter(function (it) {
                     return getWordStatus(progress, currentCategory, it) === 'review';
                 });
@@ -397,7 +386,6 @@
                     return;
                 }
             } else if (filterMode === 'learned') {
-                // ÔN TỪ ĐÃ THUỘC
                 filteredList = rawList.filter(function (it) {
                     return getWordStatus(progress, currentCategory, it) === 'learned';
                 });
@@ -601,7 +589,20 @@
             .toLowerCase()
             .replace(/[\s\u3000]+/g, '')
             .replace(/[~～]/g, '')
+            .replace(/[-–—_]/g, 'ー')
             .replace(/[.,:;?!/\\()\[\]'"`]/g, '');
+    }
+
+    function normalizeJapaneseText(text) {
+        if (!text) return '';
+        var s = text.toString().trim().toLowerCase();
+        s = romajiToHiragana(s);
+        s = katakanaToHiragana(s);
+        s = s.replace(/[\s\u3000]+/g, '')
+             .replace(/[~～]/g, '')
+             .replace(/[-–—_]/g, 'ー')
+             .replace(/[.,:;?!/\\()\[\]'"`]/g, '');
+        return s;
     }
 
     function getAnswerCandidates(rawAnswer) {
@@ -629,18 +630,30 @@
         return list;
     }
 
-    function isMatch(userAnswer, rawAnswer) {
+    function isMatch(userAnswer, rawAnswer, mode) {
         if (!userAnswer || !rawAnswer) return false;
+
+        // Nếu đang học Tiếng Nhật: chuẩn hóa cả Hiragana, Katakana, Romaji
+        if (mode === 'nihongo') {
+            var normUserJp = normalizeJapaneseText(userAnswer);
+            if (!normUserJp) return false;
+
+            var candidatesJp = getAnswerCandidates(rawAnswer);
+            for (var j = 0; j < candidatesJp.length; j++) {
+                var normCandJp = normalizeJapaneseText(candidatesJp[j]);
+                if (normUserJp === normCandJp) return true;
+            }
+            return false;
+        }
+
+        // Với các cột khác (Tiếng Việt, Kanji, Hán Việt)
         var normUser = normalizeText(userAnswer);
         if (!normUser) return false;
-
-        var normRomajiUser = normalizeText(romajiToHiragana(userAnswer));
 
         var candidates = getAnswerCandidates(rawAnswer);
         for (var i = 0; i < candidates.length; i++) {
             var normCand = normalizeText(candidates[i]);
             if (normUser === normCand) return true;
-            if (normRomajiUser && normRomajiUser === normCand) return true;
         }
 
         return false;
@@ -668,7 +681,7 @@
             var td         = input.parentElement;
             var word       = currentData[rowIndex];
 
-            var correctMatch = isMatch(userAnswer, answer);
+            var correctMatch = isMatch(userAnswer, answer, quizMode);
 
             if (correctMatch) {
                 // ĐÚNG MÀU XANH
@@ -711,9 +724,10 @@
                     wrongData.push(currentData[rowIndex]);
                 }
 
+                // Hiển thị gợi ý đáp án đúng rõ ràng
                 var hint = document.createElement('div');
                 hint.className = 'answer-hint';
-                hint.textContent = '→ ' + answer;
+                hint.textContent = 'Đ/án: ' + answer;
                 td.appendChild(hint);
             }
 

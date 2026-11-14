@@ -26,6 +26,7 @@
         <section class="card controls-card" id="controls-section">
             <h2 class="card-title">⚙️ Cài Đặt Bài Học</h2>
             
+            <!-- HÀNG 1: Chọn bộ từ & Số lượng từ -->
             <div class="form-row">
                 <div class="form-group flex-2">
                     <label for="category-select" class="form-label">
@@ -67,104 +68,30 @@
                 </div>
             </div>
 
-            <!-- CHẾ ĐỘ LỌC THÔNG MINH (Ý TƯỞNG 1) -->
-            <div class="form-group">
-                <label class="form-label">
-                    <span class="label-icon">🧠</span> Chế độ học &amp; Tiến độ ghi nhớ:
-                </label>
-                <div class="filter-mode-grid" id="filter-mode-group">
-                    <label class="filter-card active" data-mode="unlearned">
-                        <input type="radio" name="filter-mode" value="unlearned" checked>
-                        <div class="filter-icon">✨</div>
-                        <div class="filter-info">
-                            <span class="filter-title">Chỉ học từ MỚI</span>
-                            <span class="filter-desc">100% không trùng từ đã học</span>
-                        </div>
+            <!-- HÀNG 2: THU GỌN CHẾ ĐỘ HỌC & CHỌN CỘT THÀNH DROPDOWN SELECT GỌN GÀNG THEO YÊU CẦU -->
+            <div class="form-row">
+                <div class="form-group flex-1">
+                    <label for="filter-mode-select" class="form-label">
+                        <span class="label-icon">🧠</span> Chế độ học &amp; Tiến độ ghi nhớ:
                     </label>
-
-                    <label class="filter-card" data-mode="all">
-                        <input type="radio" name="filter-mode" value="all">
-                        <div class="filter-icon">🔄</div>
-                        <div class="filter-info">
-                            <span class="filter-title">Học kèm từ cũ</span>
-                            <span class="filter-desc">Bốc ngẫu nhiên cả mới và cũ</span>
-                        </div>
-                    </label>
-
-                    <label class="filter-card" data-mode="review">
-                        <input type="radio" name="filter-mode" value="review">
-                        <div class="filter-icon">🔴</div>
-                        <div class="filter-info">
-                            <span class="filter-title">Chỉ ôn từ hay sai</span>
-                            <span class="filter-desc">Luyện lại các câu chưa thuộc</span>
-                        </div>
-                    </label>
-
-                    <label class="filter-card" data-mode="learned">
-                        <input type="radio" name="filter-mode" value="learned">
-                        <div class="filter-icon">🟢</div>
-                        <div class="filter-info">
-                            <span class="filter-title">Ôn từ đã thuộc</span>
-                            <span class="filter-desc">Củng cố trí nhớ dài hạn</span>
-                        </div>
-                    </label>
+                    <select id="filter-mode-select" class="select-control">
+                        <option value="unlearned" selected>✨ Chỉ học từ MỚI (100% không trùng từ đã học)</option>
+                        <option value="all">🔄 Học kèm từ cũ (Bốc ngẫu nhiên cả mới và cũ)</option>
+                        <option value="review">🔴 Chỉ ôn từ hay sai (Luyện lại các câu chưa thuộc)</option>
+                        <option value="learned">🟢 Ôn từ đã thuộc (Củng cố trí nhớ dài hạn)</option>
+                    </select>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    <span class="label-icon">🎯</span> Chọn cột bạn muốn học (cột này sẽ bị ẩn để bạn điền):
-                </label>
-                <div class="quiz-mode-grid" id="quiz-mode-group">
-                    <label class="mode-card active">
-                        <input type="radio" name="quiz-mode" value="nihongo" checked>
-                        <div class="mode-icon flag-icon">
-                            <svg viewBox="0 0 900 600" width="30" height="20" class="svg-flag">
-                                <rect width="900" height="600" fill="#ffffff" stroke="#e2e8f0" stroke-width="10"/>
-                                <circle cx="450" cy="300" r="180" fill="#bc002d"/>
-                            </svg>
-                        </div>
-                        <div class="mode-info">
-                            <span class="mode-name">Tiếng Nhật</span>
-                            <span class="mode-desc">Điền Hiragana / Romaji</span>
-                        </div>
+                <div class="form-group flex-1">
+                    <label for="quiz-mode-select" class="form-label">
+                        <span class="label-icon">🎯</span> Chọn cột bạn muốn học (sẽ ẩn để bạn điền):
                     </label>
-
-                    <label class="mode-card">
-                        <input type="radio" name="quiz-mode" value="vietnam">
-                        <div class="mode-icon flag-icon">
-                            <svg viewBox="0 0 900 600" width="30" height="20" class="svg-flag">
-                                <rect width="900" height="600" fill="#da251d"/>
-                                <polygon points="450,150 487,265 607,265 510,336 547,450 450,380 353,450 390,336 293,265 413,265" fill="#ffde00"/>
-                            </svg>
-                        </div>
-                        <div class="mode-info">
-                            <span class="mode-name">Tiếng Việt</span>
-                            <span class="mode-desc">Điền nghĩa Tiếng Việt</span>
-                        </div>
-                    </label>
-
-                    <label class="mode-card">
-                        <input type="radio" name="quiz-mode" value="kanji">
-                        <div class="mode-icon kanji-icon">
-                            <span>漢字</span>
-                        </div>
-                        <div class="mode-info">
-                            <span class="mode-name">Kanji</span>
-                            <span class="mode-desc">Điền chữ Hán (Kanji)</span>
-                        </div>
-                    </label>
-
-                    <label class="mode-card">
-                        <input type="radio" name="quiz-mode" value="hanviet">
-                        <div class="mode-icon scroll-icon">
-                            <span>📜</span>
-                        </div>
-                        <div class="mode-info">
-                            <span class="mode-name">Hán Việt</span>
-                            <span class="mode-desc">Điền âm Hán Việt</span>
-                        </div>
-                    </label>
+                    <select id="quiz-mode-select" class="select-control">
+                        <option value="nihongo" selected>🇯🇵 Tiếng Nhật (Điền Hiragana / Romaji / Katakana)</option>
+                        <option value="vietnam">🇻🇳 Tiếng Việt (Điền nghĩa Tiếng Việt)</option>
+                        <option value="kanji">漢字 Kanji (Điền chữ Hán)</option>
+                        <option value="hanviet">📜 Hán Việt (Điền âm Hán Việt)</option>
+                    </select>
                 </div>
             </div>
 

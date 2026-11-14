@@ -821,13 +821,15 @@ td.cell-wrong {
 
 .answer-hint {
     margin-top: 0.35rem;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     font-weight: 600;
-    color: var(--correct-text);
-    background: rgba(76, 175, 80, 0.15);
-    padding: 0.2rem 0.5rem;
+    color: #1b5e20;
+    background: #e8f5e9;
+    border: 1px solid #81c784;
+    padding: 0.2rem 0.55rem;
     border-radius: 4px;
     display: inline-block;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* QUIZ ACTIONS BAR */
