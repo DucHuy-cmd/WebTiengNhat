@@ -796,40 +796,74 @@ body {
     background: #fff;
 }
 
-/* ĐÚNG MÀU XANH / SAI MÀU ĐỎ */
+/* ĐÚNG MÀU XANH / SAI MÀU ĐỎ (TỨC THÌ KHI GÕ) */
 .quiz-input.input-correct {
-    border-color: var(--correct-border) !important;
-    background-color: var(--correct-bg) !important;
-    color: var(--correct-text) !important;
+    border-color: #10b981 !important;
+    background-color: #ecfdf5 !important;
+    color: #047857 !important;
     font-weight: 600;
 }
 
 .quiz-input.input-wrong {
-    border-color: var(--wrong-border) !important;
-    background-color: var(--wrong-bg) !important;
-    color: var(--wrong-text) !important;
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
     font-weight: 600;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25) !important;
+}
+
+.quiz-input.input-wrong:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35) !important;
+    background-color: #ffffff !important;
 }
 
 td.cell-correct {
-    background-color: var(--correct-bg) !important;
+    background-color: #f0fdf4 !important;
 }
 
 td.cell-wrong {
-    background-color: var(--wrong-bg) !important;
+    background-color: #fff5f5 !important;
 }
 
-.answer-hint {
-    margin-top: 0.35rem;
-    font-size: 0.84rem;
-    font-weight: 600;
-    color: #1b5e20;
-    background: #e8f5e9;
-    border: 1px solid #81c784;
-    padding: 0.2rem 0.55rem;
+/* HIỆU ỨNG RUNG KHI GÕ SAI */
+@keyframes shakeInput {
+    0%, 100% { transform: translateX(0); }
+    15%, 55%, 85% { transform: translateX(-6px); }
+    35%, 70% { transform: translateX(6px); }
+}
+
+.shake-anim {
+    animation: shakeInput 0.35s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* BANNER MẸO KIỂM TRA TỨC THÌ */
+.quiz-tip-banner {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-left: 4px solid var(--blue-start);
+    border-radius: var(--radius-sm);
+    padding: 0.65rem 1rem;
+    font-size: 0.88rem;
+    color: #0369a1;
+    margin-bottom: 1rem;
+    line-height: 1.45;
+}
+
+.badge-success-inline {
+    color: #15803d;
+    background: #dcfce7;
+    padding: 0.1rem 0.4rem;
     border-radius: 4px;
-    display: inline-block;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}
+
+.badge-danger-inline {
+    color: #b91c1c;
+    background: #fee2e2;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
 }
 
 /* QUIZ ACTIONS BAR */

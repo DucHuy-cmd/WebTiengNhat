@@ -283,6 +283,10 @@
         retryWrongBtn.addEventListener('click', function () {
             if (wrongData.length > 0) {
                 currentData = shuffleArray(wrongData.slice());
+                currentData.forEach(function (w) {
+                    w._checked = false;
+                    w._hadWrong = false;
+                });
                 wrongData = [];
                 hide(retryWrongBtn);
                 renderTable();
@@ -483,6 +487,11 @@
         isChecked = false;
         hide(retryWrongBtn);
 
+        currentData.forEach(function (w) {
+            w._checked = false;
+            w._hadWrong = false;
+        });
+
         // Update headers
         quizTitle.textContent = categoryLabels[currentCategory] || 'Từ vựng';
         quizBadge.textContent = 'Đang học: ' + columnNames[quizMode];
@@ -498,7 +507,7 @@
     }
 
     // ========================================================
-    //  Update Progress Bar
+    //  Update Progress Bar (Theo số câu đã làm đúng)
     // ========================================================
 
     function updateProgress() {
@@ -510,14 +519,197 @@
             return;
         }
 
-        var filled = 0;
+        var completed = 0;
         allInputs.forEach(function (inp) {
-            if (inp.value.trim().length > 0) filled++;
+            if (inp.disabled && inp.classList.contains('input-correct')) {
+                completed++;
+            }
         });
 
-        var pct = Math.round((filled / total) * 100);
+        var pct = Math.round((completed / total) * 100);
         progressBar.style.width = pct + '%';
-        quizCounter.textContent = filled + ' / ' + total + ' từ';
+        quizCounter.textContent = completed + ' / ' + total + ' từ đúng';
+    }
+
+    // ========================================================
+    //  Procedural Audio Feedback & Visual Shake
+    // ========================================================
+
+    function playBeep(type) {
+        try {
+            var AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            var ctx = new AudioContext();
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            var now = ctx.currentTime;
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.12); // G5
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                osc.start(now);
+                osc.stop(now + 0.22);
+            } else if (type === 'wrong') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(260, now);
+                osc.frequency.setValueAtTime(180, now + 0.08);
+                gain.gain.setValueAtTime(0.14, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+        } catch (e) {}
+    }
+
+    function triggerShake(el) {
+        if (!el) return;
+        el.classList.remove('shake-anim');
+        void el.offsetWidth; // trigger reflow
+        el.classList.add('shake-anim');
+    }
+
+    // ========================================================
+    //  Chuyển Focus Sang Câu Chưa Làm Kế Tiếp
+    // ========================================================
+
+    function focusNextInput(currentInput) {
+        var allInputs = Array.prototype.slice.call(
+            document.querySelectorAll('.quiz-input')
+        );
+        var currentIndex = allInputs.indexOf(currentInput);
+
+        var nextInput = null;
+        // Tìm tiếp từ ô hiện tại trở đi
+        for (var i = currentIndex + 1; i < allInputs.length; i++) {
+            if (!allInputs[i].disabled) {
+                nextInput = allInputs[i];
+                break;
+            }
+        }
+
+        // Nếu phía sau đã hết, tìm lại từ đầu
+        if (!nextInput) {
+            for (var j = 0; j < currentIndex; j++) {
+                if (!allInputs[j].disabled) {
+                    nextInput = allInputs[j];
+                    break;
+                }
+            }
+        }
+
+        if (nextInput) {
+            nextInput.focus();
+            nextInput.select();
+        } else {
+            // Toàn bộ các câu đều đã trả lời chính xác!
+            checkAnswers();
+        }
+    }
+
+    // ========================================================
+    //  Kiểm Tra Tức Thì 1 Câu Khi Nhấn Enter
+    //  Ý TƯỞNG 2: SAI THÌ RUNG ĐỎ VÀ BẮT GÕ LẠI, TUYỆT ĐỐI KHÔNG HIỆN ĐÁP ÁN!
+    // ========================================================
+
+    function checkSingleInput(input) {
+        if (!input || input.disabled) return;
+
+        var answer     = input.getAttribute('data-answer');
+        var userAnswer = input.value.trim();
+        var rowIndex   = parseInt(input.getAttribute('data-index'), 10);
+        var td         = input.parentElement;
+        var word       = currentData[rowIndex];
+
+        // Nếu ô đang để trống: rung nhẹ báo hiệu cần nhập
+        if (!userAnswer) {
+            triggerShake(input);
+            input.focus();
+            return;
+        }
+
+        var correctMatch = isMatch(userAnswer, answer, quizMode);
+
+        if (correctMatch) {
+            // ĐÚNG 🟢
+            playBeep('correct');
+
+            input.classList.remove('input-wrong', 'shake-anim');
+            input.classList.add('input-correct');
+            td.classList.remove('cell-wrong');
+            td.classList.add('cell-correct');
+            input.disabled = true;
+
+            if (word) {
+                word._checked = true;
+                var progress = loadProgress();
+                var k = getWordKey(currentCategory, word);
+                var prev = progress[k] || { correct: 0, wrong: 0 };
+
+                if (word._hadWrong) {
+                    // Câu này từng bị gõ sai trước đó trong lượt này
+                    progress[k] = {
+                        status: 'review',
+                        correct: prev.correct || 0,
+                        wrong: (prev.wrong || 0) + 1,
+                        updatedAt: Date.now()
+                    };
+                } else {
+                    // Đúng ngay từ lần gõ đầu tiên
+                    progress[k] = {
+                        status: 'learned',
+                        correct: (prev.correct || 0) + 1,
+                        wrong: prev.wrong || 0,
+                        updatedAt: Date.now()
+                    };
+                }
+                saveProgress(progress);
+                updateCategoryStatsUI();
+            }
+
+            updateProgress();
+
+            // Tự động nhảy con trỏ chuột sang ô chưa hoàn thành tiếp theo
+            focusNextInput(input);
+        } else {
+            // SAI 🔴 — TUYỆT ĐỐI KHÔNG HIỆN ĐÁP ÁN ĐÚNG!
+            playBeep('wrong');
+
+            if (word) {
+                word._hadWrong = true;
+                if (wrongData.indexOf(word) === -1) {
+                    wrongData.push(word);
+                }
+
+                var progressWrong = loadProgress();
+                var kw = getWordKey(currentCategory, word);
+                var prevW = progressWrong[kw] || { correct: 0, wrong: 0 };
+                progressWrong[kw] = {
+                    status: 'review',
+                    correct: prevW.correct || 0,
+                    wrong: (prevW.wrong || 0) + 1,
+                    updatedAt: Date.now()
+                };
+                saveProgress(progressWrong);
+                updateCategoryStatsUI();
+            }
+
+            input.classList.remove('input-correct');
+            input.classList.add('input-wrong');
+            td.classList.remove('cell-correct');
+            td.classList.add('cell-wrong');
+
+            // Rung nhẹ ô input
+            triggerShake(input);
+
+            // Giữ nguyên con trỏ tại ô đó và bôi đen để người dùng tự sửa lại
+            input.focus();
+            input.select();
+        }
     }
 
     // ========================================================
@@ -559,9 +751,9 @@
                         input.setAttribute('autocapitalize', 'off');
                         input.setAttribute('spellcheck', 'false');
 
-                        // Romaji real-time conversion if learning Tiếng Nhật
-                        if (col === 'nihongo') {
-                            input.addEventListener('input', function (e) {
+                        // Xử lý khi gõ chữ
+                        input.addEventListener('input', function (e) {
+                            if (col === 'nihongo') {
                                 if (romajiConvertCheck && romajiConvertCheck.checked) {
                                     var original = e.target.value;
                                     var converted = romajiToHiragana(original);
@@ -569,14 +761,29 @@
                                         e.target.value = converted;
                                     }
                                 }
-                                updateProgress();
-                            });
-                        } else {
-                            input.addEventListener('input', updateProgress);
-                        }
+                            }
+                            // Khi đang sửa lại từ bị sai, xóa viền đỏ để gõ thoải mái
+                            if (input.classList.contains('input-wrong')) {
+                                input.classList.remove('input-wrong', 'shake-anim');
+                                td.classList.remove('cell-wrong');
+                            }
+                            updateProgress();
+                        });
 
-                        // Enter navigation
-                        input.addEventListener('keydown', handleKeyNavigation);
+                        // Nhấn Enter kiểm tra tức thì
+                        input.addEventListener('keydown', function (e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                if (e.shiftKey) {
+                                    // Shift + Enter: bỏ qua sang câu tiếp theo
+                                    focusNextInput(input);
+                                } else {
+                                    // Enter: Kiểm tra tức thì câu này!
+                                    checkSingleInput(input);
+                                }
+                            }
+                        });
+
                         td.appendChild(input);
                     }
                 } else {
@@ -621,24 +828,6 @@
         });
 
         updateProgress();
-    }
-
-    // Keyboard navigation (Enter)
-    function handleKeyNavigation(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            var allInputs = Array.prototype.slice.call(
-                document.querySelectorAll('.quiz-input:not(:disabled)')
-            );
-            var currentIndex = allInputs.indexOf(e.target);
-
-            if (currentIndex >= 0 && currentIndex < allInputs.length - 1) {
-                allInputs[currentIndex + 1].focus();
-                allInputs[currentIndex + 1].select();
-            } else {
-                checkAnswers();
-            }
-        }
     }
 
     // ========================================================
@@ -749,13 +938,23 @@
 
             if (correctMatch) {
                 // ĐÚNG MÀU XANH
-                input.classList.remove('input-wrong');
+                input.classList.remove('input-wrong', 'shake-anim');
                 input.classList.add('input-correct');
+                td.classList.remove('cell-wrong');
                 td.classList.add('cell-correct');
-                correct++;
+                input.disabled = true;
 
-                // Cập nhật trạng thái "Đã thuộc" (learned)
-                if (word) {
+                if (word && word._hadWrong) {
+                    wrong++;
+                    if (wrongData.indexOf(word) === -1) {
+                        wrongData.push(word);
+                    }
+                } else {
+                    correct++;
+                }
+
+                // Cập nhật trạng thái "Đã thuộc" nếu đúng ngay từ đầu
+                if (word && !word._hadWrong) {
                     var k = getWordKey(currentCategory, word);
                     var prev = progress[k] || { correct: 0, wrong: 0 };
                     progress[k] = {
@@ -766,33 +965,29 @@
                     };
                 }
             } else {
-                // SAI MÀU ĐỎ
+                // SAI MÀU ĐỎ — TUYỆT ĐỐI KHÔNG HIỆN ĐÁP ÁN ĐÚNG!
                 input.classList.remove('input-correct');
                 input.classList.add('input-wrong');
+                td.classList.remove('cell-correct');
                 td.classList.add('cell-wrong');
                 wrong++;
 
                 // Cập nhật trạng thái "Cần ôn lại" (review)
                 if (word) {
-                    var k = getWordKey(currentCategory, word);
-                    var prev = progress[k] || { correct: 0, wrong: 0 };
-                    progress[k] = {
+                    word._hadWrong = true;
+                    if (wrongData.indexOf(word) === -1) {
+                        wrongData.push(word);
+                    }
+                    var kw = getWordKey(currentCategory, word);
+                    var prevW = progress[kw] || { correct: 0, wrong: 0 };
+                    progress[kw] = {
                         status: 'review',
-                        correct: prev.correct || 0,
-                        wrong: (prev.wrong || 0) + 1,
+                        correct: prevW.correct || 0,
+                        wrong: (prevW.wrong || 0) + 1,
                         updatedAt: Date.now()
                     };
                 }
-
-                if (!isNaN(rowIndex) && currentData[rowIndex]) {
-                    wrongData.push(currentData[rowIndex]);
-                }
-
-                // Hiển thị gợi ý đáp án đúng rõ ràng
-                var hint = document.createElement('div');
-                hint.className = 'answer-hint';
-                hint.textContent = 'Đ/án: ' + answer;
-                td.appendChild(hint);
+                // TUYỆT ĐỐI KHÔNG HIỆN ĐÁP ÁN ĐÚNG!
             }
 
             input.disabled = true;
@@ -880,6 +1075,10 @@
         hide(retryWrongBtn);
 
         currentData = shuffleArray(currentData);
+        currentData.forEach(function (w) {
+            w._checked = false;
+            w._hadWrong = false;
+        });
 
         renderTable();
         hide(resultSection);

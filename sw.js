@@ -1,9 +1,9 @@
 /* ========================================================
    Service Worker for PWA — Học Từ Vựng Tiếng Nhật
-   Supports 100% Offline Learning
+   Supports 100% Offline Learning with Network-First Strategy
    ======================================================== */
 
-const CACHE_NAME = 'webtiengnhat-v1';
+const CACHE_NAME = 'webtiengnhat-v3';
 
 const STATIC_ASSETS = [
     './',
@@ -19,22 +19,22 @@ const STATIC_ASSETS = [
 
 // Install: Cache all static assets
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(STATIC_ASSETS);
-        }).then(() => {
-            return self.skipWaiting();
         })
     );
 });
 
-// Activate: Clean up old caches
+// Activate: Clean up old caches immediately
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keys) => {
             return Promise.all(
                 keys.map((key) => {
                     if (key !== CACHE_NAME) {
+                        console.log('Xóa cache cũ:', key);
                         return caches.delete(key);
                     }
                 })
@@ -45,34 +45,30 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// Fetch: Cache-first strategy, falling back to network
+// Fetch: Network First, falling back to cache (Optimal for instant updates + offline support)
 self.addEventListener('fetch', (event) => {
-    // Only handle GET requests
     if (event.request.method !== 'GET') return;
 
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-                // Return cached asset immediately
-                return cachedResponse;
-            }
-
-            // Otherwise fetch from network
-            return fetch(event.request).then((networkResponse) => {
-                // Cache valid response if from same origin
-                if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-                    const responseToCache = networkResponse.clone();
+        fetch(event.request)
+            .then((networkResponse) => {
+                if (networkResponse && networkResponse.status === 200) {
+                    const responseClone = networkResponse.clone();
                     caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(event.request, responseToCache);
+                        cache.put(event.request, responseClone);
                     });
                 }
                 return networkResponse;
-            }).catch(() => {
-                // Fallback to offline index if HTML requested
-                if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
-                    return caches.match('./index.html');
-                }
-            });
-        })
+            })
+            .catch(() => {
+                return caches.match(event.request).then((cachedResponse) => {
+                    if (cachedResponse) {
+                        return cachedResponse;
+                    }
+                    if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
+                        return caches.match('./index.html');
+                    }
+                });
+            })
     );
 });

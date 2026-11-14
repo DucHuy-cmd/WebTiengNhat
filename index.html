@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
     <header class="app-header">
@@ -151,6 +151,11 @@
                 <div class="progress-fill" id="progress-bar"></div>
             </div>
 
+            <!-- Banner Mẹo Kiểm Tra Tức Thì -->
+            <div class="quiz-tip-banner">
+                💡 <strong>Kiểm tra tức thì:</strong> Nhập từ rồi nhấn <strong>Enter</strong>. Đúng sẽ báo <strong class="badge-success-inline">xanh 🟢</strong> và tự nhảy tiếp; sai sẽ rung báo <strong class="badge-danger-inline">đỏ 🔴</strong> để bạn tự gõ lại cho đến khi đúng (tuyệt đối không hiện đáp án). <em>(Nhấn <strong>Shift + Enter</strong> nếu muốn bỏ qua câu)</em>.
+            </div>
+
             <!-- Bảng 4 Cột Chuẩn -->
             <div class="table-container">
                 <table class="vocab-table" id="vocab-table">
@@ -257,8 +262,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/data.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/data.js?v=3"></script>
+    <script src="js/app.js?v=3"></script>
 
     <!-- PWA Service Worker Registration -->
     <script>
