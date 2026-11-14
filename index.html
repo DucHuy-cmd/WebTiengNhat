@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Học Từ Vựng N4 — Minna no Nihongo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-container">
+            <div class="header-icon">🌊</div>
+            <div class="header-text">
+                <h1>Học Từ Vựng N4</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <!-- BẢNG ĐIỀU KHIỂN -->
+        <section class="card controls-card" id="controls-section">
+            <h2 class="card-title">⚙️ Cài Đặt Bài Học</h2>
+            
+            <div class="form-row">
+                <div class="form-group flex-2">
+                    <label for="category-select" class="form-label">
+                        <span class="label-icon">📂</span> Chọn bộ từ:
+                    </label>
+                    <select id="category-select" class="select-control"></select>
+                </div>
+
+                <div class="form-group flex-1">
+                    <label for="limit-input" class="form-label">
+                        <span class="label-icon">🔢</span> Số lượng từ muốn học:
+                    </label>
+                    <div class="limit-box">
+                        <input type="number" id="limit-input" class="input-control" min="1" max="500" placeholder="Nhập số từ (để trống = tất cả)">
+                        <div class="quick-limits">
+                            <button type="button" class="chip-btn" data-val="10">10</button>
+                            <button type="button" class="chip-btn active" data-val="20">20</button>
+                            <button type="button" class="chip-btn" data-val="30">30</button>
+                            <button type="button" class="chip-btn" data-val="50">50</button>
+                            <button type="button" class="chip-btn" data-val="">Tất cả</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-icon">🎯</span> Chọn cột bạn muốn học (cột này sẽ bị ẩn để bạn điền):
+                </label>
+                <div class="quiz-mode-grid" id="quiz-mode-group">
+                    <label class="mode-card active">
+                        <input type="radio" name="quiz-mode" value="nihongo" checked>
+                        <div class="mode-icon">🇯🇵</div>
+                        <div class="mode-info">
+                            <span class="mode-name">Tiếng Nhật</span>
+                            <span class="mode-desc">Điền Hiragana / Romaji</span>
+                        </div>
+                    </label>
+
+                    <label class="mode-card">
+                        <input type="radio" name="quiz-mode" value="vietnam">
+                        <div class="mode-icon">🇻🇳</div>
+                        <div class="mode-info">
+                            <span class="mode-name">Tiếng Việt</span>
+                            <span class="mode-desc">Điền nghĩa Tiếng Việt</span>
+                        </div>
+                    </label>
+
+                    <label class="mode-card">
+                        <input type="radio" name="quiz-mode" value="kanji">
+                        <div class="mode-icon">漢字</div>
+                        <div class="mode-info">
+                            <span class="mode-name">Kanji</span>
+                            <span class="mode-desc">Điền chữ Hán (Kanji)</span>
+                        </div>
+                    </label>
+
+                    <label class="mode-card">
+                        <input type="radio" name="quiz-mode" value="hanviet">
+                        <div class="mode-icon">📜</div>
+                        <div class="mode-info">
+                            <span class="mode-name">Hán Việt</span>
+                            <span class="mode-desc">Điền âm Hán Việt</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="options-row">
+                <label class="checkbox-pill">
+                    <input type="checkbox" id="romaji-convert-check" checked>
+                    <span>⌨️ Tự chuyển Romaji sang Hiragana</span>
+                </label>
+            </div>
+
+            <div class="action-center">
+                <button id="start-btn" class="btn btn-primary btn-xl">
+                    <span class="btn-icon">🚀</span> Bắt Đầu Học Ngay
+                </button>
+            </div>
+        </section>
+
+        <!-- KHU VỰC QUIZ HỌC TỪ -->
+        <section id="quiz-section" class="quiz-section hidden">
+            <!-- Header của Quiz -->
+            <div class="quiz-meta-bar">
+                <div class="meta-left">
+                    <button id="back-btn" class="btn btn-sm btn-ghost" title="Quay lại cài đặt">
+                        ← Chọn bộ khác
+                    </button>
+                    <h2 id="quiz-title" class="quiz-category-name">Tên bộ từ</h2>
+                </div>
+                <div class="meta-right">
+                    <span class="badge badge-ocean" id="quiz-badge">Đang học: Tiếng Nhật</span>
+                    <span class="badge badge-light" id="quiz-counter">0 / 0 từ</span>
+                </div>
+            </div>
+
+            <!-- Thanh tiến độ -->
+            <div class="progress-bar-container">
+                <div class="progress-fill" id="progress-bar"></div>
+            </div>
+
+            <!-- Bảng 4 Cột Chuẩn -->
+            <div class="table-container">
+                <table class="vocab-table" id="vocab-table">
+                    <thead>
+                        <tr>
+                            <th class="col-stt">STT</th>
+                            <th class="col-nihongo">Tiếng Nhật</th>
+                            <th class="col-vietnam">Tiếng Việt</th>
+                            <th class="col-kanji">Kanji</th>
+                            <th class="col-hanviet">Hán Việt</th>
+                        </tr>
+                    </thead>
+                    <tbody id="vocab-body">
+                        <!-- Render động qua JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Nút Hành Động Quiz -->
+            <div class="quiz-actions-bar">
+                <button id="check-btn" class="btn btn-primary btn-lg">
+                    <span class="btn-icon">✅</span> Kiểm Tra Kết Quả
+                </button>
+                <button id="retry-wrong-btn" class="btn btn-warning btn-lg hidden">
+                    <span class="btn-icon">🔁</span> Ôn Lại Các Câu Sai
+                </button>
+                <button id="reset-btn" class="btn btn-outline btn-lg">
+                    <span class="btn-icon">🔄</span> Làm Lại Từ Đầu
+                </button>
+                <button id="show-answers-btn" class="btn btn-ghost btn-lg">
+                    <span class="btn-icon">👁️</span> Xem Đáp Án
+                </button>
+            </div>
+        </section>
+
+        <!-- KHU VỰC KẾT QUẢ THỐNG KÊ -->
+        <section id="result-section" class="result-section hidden">
+            <div class="result-card">
+                <div class="result-header">
+                    <div class="result-trophy" id="result-trophy">🏆</div>
+                    <h2 class="result-title" id="result-message">Chúc mừng bạn đã hoàn thành!</h2>
+                    <p class="result-sub" id="result-subtext">Xem chi tiết kết quả đúng / sai bên dưới:</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card stat-correct">
+                        <div class="stat-num" id="correct-count">0</div>
+                        <div class="stat-title">Câu Đúng</div>
+                    </div>
+                    <div class="stat-card stat-wrong">
+                        <div class="stat-num" id="wrong-count">0</div>
+                        <div class="stat-title">Câu Sai</div>
+                    </div>
+                    <div class="stat-card stat-total">
+                        <div class="stat-num" id="percentage">0%</div>
+                        <div class="stat-title">Tỷ Lệ Đúng</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>📘 Web Học Từ Vựng N4 &bull; Dữ liệu theo giáo trình <strong>Minna no Nihongo</strong></p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
