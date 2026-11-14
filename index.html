@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
     <header class="app-header">
@@ -153,7 +153,7 @@
 
             <!-- Banner Mẹo Kiểm Tra Tức Thì -->
             <div class="quiz-tip-banner">
-                💡 <strong>Kiểm tra tức thì:</strong> Nhập từ rồi nhấn <strong>Enter</strong>. Đúng sẽ báo <strong class="badge-success-inline">xanh 🟢</strong> và tự nhảy tiếp; sai sẽ rung báo <strong class="badge-danger-inline">đỏ 🔴</strong> để bạn tự gõ lại cho đến khi đúng (tuyệt đối không hiện đáp án). <em>(Nhấn <strong>Shift + Enter</strong> nếu muốn bỏ qua câu)</em>.
+                💡 <strong>Kiểm tra tức thì:</strong> Gõ xong nhấn <strong>Enter</strong> hoặc chuyển sang ô khác. Đúng sẽ báo <strong class="badge-success-inline">xanh 🟢</strong> và tự nhảy tiếp; sai sẽ rung báo <strong class="badge-danger-inline">đỏ 🔴</strong> để bạn tự gõ lại cho đến khi đúng (tuyệt đối không hiện đáp án). <em>(Nhấn <strong>Shift + Enter</strong> nếu muốn bỏ qua câu)</em>.
             </div>
 
             <!-- Bảng 4 Cột Chuẩn -->
@@ -174,13 +174,10 @@
                 </table>
             </div>
 
-            <!-- Nút Hành Động Quiz -->
+            <!-- Nút Hành Động Quiz (Đã bỏ nút Kiểm Tra Kết Quả vì hệ thống tự động kiểm tra tức thì từng từ) -->
             <div class="quiz-actions-bar">
-                <button id="check-btn" class="btn btn-primary btn-lg">
-                    <span class="btn-icon">✅</span> Kiểm Tra Kết Quả
-                </button>
                 <button id="retry-wrong-btn" class="btn btn-warning btn-lg hidden">
-                    <span class="btn-icon">🔁</span> Ôn Lại Các Câu Sai
+                    <span class="btn-icon">🔁</span> Ôn Lại Các Câu Từng Sai
                 </button>
                 <button id="reset-btn" class="btn btn-outline btn-lg">
                     <span class="btn-icon">🔄</span> Làm Lại Từ Đầu
@@ -262,8 +259,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/data.js?v=3"></script>
-    <script src="js/app.js?v=3"></script>
+    <script src="js/data.js?v=4"></script>
+    <script src="js/app.js?v=4"></script>
 
     <!-- PWA Service Worker Registration -->
     <script>

@@ -258,7 +258,9 @@
             startQuiz(false);
         });
 
-        checkBtn.addEventListener('click', checkAnswers);
+        if (checkBtn) {
+            checkBtn.addEventListener('click', checkAnswers);
+        }
         resetBtn.addEventListener('click', resetQuiz);
         showAnswersBtn.addEventListener('click', revealAllAnswers);
         backBtn.addEventListener('click', goBack);
@@ -574,6 +576,22 @@
     }
 
     // ========================================================
+    //  Kiểm Tra Đã Hoàn Thành Toàn Bộ Bài Hay Chưa
+    // ========================================================
+
+    function checkIfAllCompleted() {
+        var allInputs = document.querySelectorAll('.quiz-input');
+        if (allInputs.length === 0) return;
+        var uncompleted = 0;
+        allInputs.forEach(function (inp) {
+            if (!inp.disabled) uncompleted++;
+        });
+        if (uncompleted === 0) {
+            checkAnswers();
+        }
+    }
+
+    // ========================================================
     //  Chuyển Focus Sang Câu Chưa Làm Kế Tiếp
     // ========================================================
 
@@ -612,12 +630,15 @@
     }
 
     // ========================================================
-    //  Kiểm Tra Tức Thì 1 Câu Khi Nhấn Enter
+    //  Kiểm Tra Tức Thì 1 Câu
+    //  Hỗ trợ: Enter, Blur (chuyển ô), Change, Gõ đúng tự nhảy
     //  Ý TƯỞNG 2: SAI THÌ RUNG ĐỎ VÀ BẮT GÕ LẠI, TUYỆT ĐỐI KHÔNG HIỆN ĐÁP ÁN!
     // ========================================================
 
-    function checkSingleInput(input) {
+    function checkSingleInput(input, options) {
         if (!input || input.disabled) return;
+        var opts = options || {};
+        var fromBlur = !!opts.fromBlur;
 
         var answer     = input.getAttribute('data-answer');
         var userAnswer = input.value.trim();
@@ -625,10 +646,12 @@
         var td         = input.parentElement;
         var word       = currentData[rowIndex];
 
-        // Nếu ô đang để trống: rung nhẹ báo hiệu cần nhập
+        // Nếu ô đang để trống:
         if (!userAnswer) {
-            triggerShake(input);
-            input.focus();
+            if (!fromBlur) {
+                triggerShake(input);
+                input.focus();
+            }
             return;
         }
 
@@ -673,8 +696,12 @@
 
             updateProgress();
 
-            // Tự động nhảy con trỏ chuột sang ô chưa hoàn thành tiếp theo
-            focusNextInput(input);
+            if (!fromBlur) {
+                // Tự động nhảy con trỏ chuột sang ô chưa hoàn thành tiếp theo
+                focusNextInput(input);
+            } else {
+                checkIfAllCompleted();
+            }
         } else {
             // SAI 🔴 — TUYỆT ĐỐI KHÔNG HIỆN ĐÁP ÁN ĐÚNG!
             playBeep('wrong');
@@ -706,9 +733,12 @@
             // Rung nhẹ ô input
             triggerShake(input);
 
-            // Giữ nguyên con trỏ tại ô đó và bôi đen để người dùng tự sửa lại
-            input.focus();
-            input.select();
+            // Nếu nhấn Enter: giữ nguyên con trỏ tại ô đó và bôi đen để người dùng tự sửa lại
+            // Nếu là blur (họ click sang ô khác): không cướp lại focus
+            if (!fromBlur) {
+                input.focus();
+                input.select();
+            }
         }
     }
 
@@ -762,25 +792,55 @@
                                     }
                                 }
                             }
+
                             // Khi đang sửa lại từ bị sai, xóa viền đỏ để gõ thoải mái
                             if (input.classList.contains('input-wrong')) {
                                 input.classList.remove('input-wrong', 'shake-anim');
                                 td.classList.remove('cell-wrong');
                             }
+
+                            // AUTO-CHECK KHI VỪA GÕ ĐÚNG TỪ:
+                            // Nếu chuỗi vừa gõ khớp hoàn toàn với đáp án đúng -> Báo xanh và tự động nhảy tiếp ngay!
+                            var currentVal = input.value.trim();
+                            if (currentVal.length > 0 && isMatch(currentVal, cellValue, quizMode)) {
+                                checkSingleInput(input, { fromBlur: false });
+                                return;
+                            }
+
                             updateProgress();
                         });
 
-                        // Nhấn Enter kiểm tra tức thì
+                        // Nhấn Enter kiểm tra tức thì (keydown)
                         input.addEventListener('keydown', function (e) {
-                            if (e.key === 'Enter') {
+                            if (e.key === 'Enter' || e.keyCode === 13 || e.which === 13) {
                                 e.preventDefault();
                                 if (e.shiftKey) {
                                     // Shift + Enter: bỏ qua sang câu tiếp theo
                                     focusNextInput(input);
                                 } else {
                                     // Enter: Kiểm tra tức thì câu này!
-                                    checkSingleInput(input);
+                                    checkSingleInput(input, { fromBlur: false });
                                 }
+                            }
+                        });
+
+                        // Nhấn Enter cho bộ gõ tiếng Việt / Unikey / IME (keyup)
+                        input.addEventListener('keyup', function (e) {
+                            if ((e.key === 'Enter' || e.keyCode === 13 || e.which === 13) && !input.disabled) {
+                                checkSingleInput(input, { fromBlur: false });
+                            }
+                        });
+
+                        // Khi người dùng click ra ngoài hoặc chuyển sang ô khác (blur / change)
+                        input.addEventListener('blur', function () {
+                            if (input.value.trim().length > 0 && !input.disabled) {
+                                checkSingleInput(input, { fromBlur: true });
+                            }
+                        });
+
+                        input.addEventListener('change', function () {
+                            if (input.value.trim().length > 0 && !input.disabled) {
+                                checkSingleInput(input, { fromBlur: true });
                             }
                         });
 
