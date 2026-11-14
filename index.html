@@ -12,7 +12,9 @@
 <body>
     <header class="app-header">
         <div class="header-container">
-            <div class="header-icon">🌊</div>
+            <div class="header-icon">
+                <span class="wave-emoji">🌊</span>
+            </div>
             <div class="header-text">
                 <h1>Học Từ Vựng N4</h1>
             </div>
@@ -56,7 +58,12 @@
                 <div class="quiz-mode-grid" id="quiz-mode-group">
                     <label class="mode-card active">
                         <input type="radio" name="quiz-mode" value="nihongo" checked>
-                        <div class="mode-icon">🇯🇵</div>
+                        <div class="mode-icon flag-icon">
+                            <svg viewBox="0 0 900 600" width="30" height="20" class="svg-flag">
+                                <rect width="900" height="600" fill="#ffffff" stroke="#e2e8f0" stroke-width="10"/>
+                                <circle cx="450" cy="300" r="180" fill="#bc002d"/>
+                            </svg>
+                        </div>
                         <div class="mode-info">
                             <span class="mode-name">Tiếng Nhật</span>
                             <span class="mode-desc">Điền Hiragana / Romaji</span>
@@ -65,7 +72,12 @@
 
                     <label class="mode-card">
                         <input type="radio" name="quiz-mode" value="vietnam">
-                        <div class="mode-icon">🇻🇳</div>
+                        <div class="mode-icon flag-icon">
+                            <svg viewBox="0 0 900 600" width="30" height="20" class="svg-flag">
+                                <rect width="900" height="600" fill="#da251d"/>
+                                <polygon points="450,150 487,265 607,265 510,336 547,450 450,380 353,450 390,336 293,265 413,265" fill="#ffde00"/>
+                            </svg>
+                        </div>
                         <div class="mode-info">
                             <span class="mode-name">Tiếng Việt</span>
                             <span class="mode-desc">Điền nghĩa Tiếng Việt</span>
@@ -74,7 +86,9 @@
 
                     <label class="mode-card">
                         <input type="radio" name="quiz-mode" value="kanji">
-                        <div class="mode-icon">漢字</div>
+                        <div class="mode-icon kanji-icon">
+                            <span>漢字</span>
+                        </div>
                         <div class="mode-info">
                             <span class="mode-name">Kanji</span>
                             <span class="mode-desc">Điền chữ Hán (Kanji)</span>
@@ -83,7 +97,9 @@
 
                     <label class="mode-card">
                         <input type="radio" name="quiz-mode" value="hanviet">
-                        <div class="mode-icon">📜</div>
+                        <div class="mode-icon scroll-icon">
+                            <span>📜</span>
+                        </div>
                         <div class="mode-info">
                             <span class="mode-name">Hán Việt</span>
                             <span class="mode-desc">Điền âm Hán Việt</span>

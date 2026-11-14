@@ -1,20 +1,16 @@
 /* ========================================================
    HỌC TỪ VỰNG TIẾNG NHẬT N4 — MINNA NO NIHONGO
-   BẢNG MÀU CHỦ ĐẠO: WATERCOLOR SKY & OCEAN BLUE
+   BẢNG MÀU CHUẨN THEO YÊU CẦU: VIBRANT SKY BLUE & WHITE CARD
    ======================================================== */
 
 :root {
-    /* Ocean & Sky Palette from Background */
-    --ocean-900: #023e8a;
-    --ocean-800: #0077b6;
-    --ocean-700: #0096c7;
-    --ocean-600: #00b4d8;
-    --ocean-500: #48cae4;
-    --ocean-400: #90e0ef;
-    --ocean-300: #ade8f4;
-    --ocean-200: #caf0f8;
-    --ocean-100: #e0f7fa;
-    --ocean-50:  #f0f9ff;
+    /* Exact Vibrant Cerulean / Sky Blue Gradient from User Image */
+    --blue-start:  #0b88c0;
+    --blue-mid:    #0d9ecd;
+    --blue-end:    #14b2d9;
+    --blue-dark:   #0873a3;
+    --blue-light:  #f0f9ff;
+    --blue-hover:  #0a7cb0;
 
     /* Semantic Feedback Colors */
     --correct-bg:     #e8f5e9;
@@ -23,13 +19,10 @@
     --wrong-bg:       #ffebee;
     --wrong-border:   #ef5350;
     --wrong-text:     #b71c1c;
-    --warning:        #f59e0b;
-    --warning-bg:     #fef3c7;
+    --warning:        #d97706;
 
-    /* Neutrals */
+    /* Clean Neutrals */
     --white:       #ffffff;
-    --card-bg:     rgba(255, 255, 255, 0.92);
-    --card-border: rgba(72, 202, 228, 0.45);
     --gray-50:     #f8fafc;
     --gray-100:    #f1f5f9;
     --gray-200:    #e2e8f0;
@@ -42,9 +35,9 @@
     --gray-900:    #0f172a;
 
     /* Shadows */
-    --shadow-sm:  0 2px 4px rgba(0, 119, 182, 0.08);
-    --shadow-md:  0 6px 16px rgba(0, 119, 182, 0.12);
-    --shadow-lg:  0 12px 28px rgba(0, 119, 182, 0.16);
+    --shadow-sm:  0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-md:  0 4px 16px rgba(0, 0, 0, 0.06);
+    --shadow-lg:  0 10px 25px rgba(0, 0, 0, 0.08);
 
     /* Border Radius */
     --radius-sm:   8px;
@@ -79,82 +72,87 @@ body {
     line-height: 1.5;
 }
 
-/* HEADER */
+/* HEADER — ĐÚNG THEO HÌNH 1 CỦA BẠN */
 .app-header {
-    background: linear-gradient(135deg, rgba(0, 119, 182, 0.92) 0%, rgba(0, 180, 216, 0.88) 100%);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: linear-gradient(90deg, var(--blue-start) 0%, var(--blue-mid) 50%, var(--blue-end) 100%);
     color: var(--white);
-    padding: 1.25rem 1rem;
-    box-shadow: 0 4px 20px rgba(0, 119, 182, 0.25);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    height: 62px;
+    padding: 0 1.5rem;
+    box-shadow: 0 2px 10px rgba(11, 136, 192, 0.25);
+    display: flex;
+    align-items: center;
 }
 
 .header-container {
-    max-width: 1100px;
+    max-width: 1050px;
+    width: 100%;
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 0.75rem;
 }
 
 .header-icon {
-    font-size: 2.2rem;
-    background: rgba(255, 255, 255, 0.2);
-    width: 52px;
-    height: 52px;
-    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.22);
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(6px);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
-.header-text h1 {
-    font-size: 1.65rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+.wave-emoji {
+    font-size: 1.35rem;
 }
 
-/* MAIN CONTAINER */
+.header-text h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--white);
+}
+
+/* MAIN CONTAINER — CĂN CHỈNH GIỮA CỰC CHUẨN */
 .main-container {
-    max-width: 1100px;
+    max-width: 1050px;
     width: 100%;
-    margin: 2rem auto;
+    margin: 1.75rem auto 2.5rem;
     padding: 0 1rem;
     flex: 1;
 }
 
-/* GLASSMORPHIC CARDS */
+/* KHUNG CARD — NỀN TRẮNG TINH THEO YÊU CẦU ("còn cái hình 2 vẫn để màu trắng nha") */
 .card {
-    background: var(--card-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: var(--white);
     border-radius: var(--radius-lg);
-    padding: 2rem;
+    padding: 2rem 2.25rem;
     box-shadow: var(--shadow-lg);
-    border: 1.5px solid var(--card-border);
+    border: 1px solid var(--gray-200);
 }
 
 .card-title {
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: var(--ocean-900);
+    color: var(--gray-800);
     margin-bottom: 1.5rem;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--ocean-300);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* FORM ELEMENTS */
 .form-row {
     display: flex;
-    gap: 1.25rem;
+    gap: 1.5rem;
     margin-bottom: 1.5rem;
     flex-wrap: wrap;
 }
 
-.flex-1 { flex: 1; min-width: 220px; }
+.flex-1 { flex: 1; min-width: 240px; }
 .flex-2 { flex: 2; min-width: 280px; }
 
 .form-group {
@@ -164,24 +162,24 @@ body {
 .form-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
     font-weight: 600;
-    color: var(--ocean-900);
+    color: var(--gray-800);
     margin-bottom: 0.5rem;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
 }
 
 .label-icon {
-    font-size: 1.1rem;
+    font-size: 1rem;
 }
 
 .select-control,
 .input-control {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 2px solid var(--ocean-400);
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid var(--gray-300);
     border-radius: var(--radius-sm);
-    font-size: 1rem;
+    font-size: 0.95rem;
     background-color: var(--white);
     color: var(--gray-800);
     transition: all 0.2s ease;
@@ -190,15 +188,15 @@ body {
 .select-control:focus,
 .input-control:focus {
     outline: none;
-    border-color: var(--ocean-700);
-    box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
+    border-color: var(--blue-start);
+    box-shadow: 0 0 0 3px rgba(11, 136, 192, 0.2);
 }
 
 /* LIMIT BOX WITH QUICK CHIPS */
 .limit-box {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.45rem;
 }
 
 .quick-limits {
@@ -208,10 +206,10 @@ body {
 }
 
 .chip-btn {
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid var(--ocean-400);
-    color: var(--ocean-800);
-    padding: 0.25rem 0.6rem;
+    background: var(--white);
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+    padding: 0.25rem 0.65rem;
     border-radius: var(--radius-full);
     font-size: 0.8rem;
     font-weight: 600;
@@ -220,32 +218,33 @@ body {
 }
 
 .chip-btn:hover {
-    background: var(--ocean-500);
-    color: var(--white);
-    border-color: var(--ocean-600);
+    background: var(--blue-light);
+    color: var(--blue-start);
+    border-color: var(--blue-start);
 }
 
 .chip-btn.active {
-    background: var(--ocean-700);
+    background: linear-gradient(90deg, var(--blue-start), var(--blue-mid));
     color: var(--white);
-    border-color: var(--ocean-800);
+    border-color: var(--blue-start);
+    box-shadow: 0 2px 6px rgba(11, 136, 192, 0.25);
 }
 
 /* QUIZ MODE CARDS (4 CỘT) */
 .quiz-mode-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.85rem;
 }
 
 .mode-card {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.15rem;
-    background: rgba(255, 255, 255, 0.85);
-    border: 2px solid var(--ocean-400);
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -258,33 +257,46 @@ body {
 }
 
 .mode-card:hover {
-    border-color: var(--ocean-600);
-    background: #ffffff;
-    transform: translateY(-2px);
+    border-color: var(--blue-start);
+    background: var(--blue-light);
+    transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
 }
 
 .mode-card.active,
 .mode-card:has(input:checked) {
-    background: linear-gradient(135deg, var(--ocean-100) 0%, #ffffff 100%);
-    border-color: var(--ocean-800);
-    box-shadow: 0 0 0 2px var(--ocean-800), var(--shadow-md);
+    background: var(--blue-light);
+    border-color: var(--blue-start);
+    box-shadow: 0 0 0 2px var(--blue-start), 0 4px 12px rgba(11, 136, 192, 0.12);
 }
 
 .mode-icon {
-    font-size: 1.75rem;
-    width: 48px;
-    height: 48px;
-    background: var(--white);
+    width: 42px;
+    height: 42px;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
     border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: var(--shadow-sm);
     flex-shrink: 0;
+}
+
+.svg-flag {
+    display: block;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.kanji-icon span {
     font-family: var(--font-jp);
+    font-size: 1.15rem;
     font-weight: 700;
-    color: var(--ocean-800);
+    color: var(--blue-start);
+}
+
+.scroll-icon span {
+    font-size: 1.25rem;
 }
 
 .mode-info {
@@ -294,16 +306,16 @@ body {
 
 .mode-name {
     font-weight: 700;
-    font-size: 1.05rem;
-    color: var(--ocean-900);
+    font-size: 0.95rem;
+    color: var(--gray-900);
 }
 
 /* CHỮ NHỎ HIỆN RÕ Ở CẢ 4 CÁI */
 .mode-desc {
-    font-size: 0.82rem;
-    color: var(--ocean-800);
+    font-size: 0.78rem;
+    color: var(--gray-600);
     font-weight: 500;
-    margin-top: 0.15rem;
+    margin-top: 0.1rem;
 }
 
 /* OPTIONS ROW */
@@ -311,37 +323,37 @@ body {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
 }
 
 .checkbox-pill {
     display: inline-flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.65rem 1.1rem;
-    background: rgba(255, 255, 255, 0.85);
-    border: 1.5px solid var(--ocean-400);
+    gap: 0.5rem;
+    padding: 0.55rem 1rem;
+    background: var(--white);
+    border: 1.5px solid var(--gray-300);
     border-radius: var(--radius-full);
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     font-weight: 600;
-    color: var(--ocean-900);
+    color: var(--gray-700);
     transition: all 0.2s ease;
 }
 
 .checkbox-pill:hover {
-    border-color: var(--ocean-600);
-    background: #ffffff;
+    border-color: var(--blue-start);
+    background: var(--blue-light);
 }
 
 .checkbox-pill:has(input:checked) {
-    background: var(--ocean-100);
-    border-color: var(--ocean-700);
-    color: var(--ocean-900);
+    background: var(--blue-light);
+    border-color: var(--blue-start);
+    color: var(--blue-start);
 }
 
 .checkbox-pill input[type="checkbox"] {
-    accent-color: var(--ocean-700);
+    accent-color: var(--blue-start);
     width: 16px;
     height: 16px;
 }
@@ -349,7 +361,7 @@ body {
 /* BUTTONS */
 .action-center {
     text-align: center;
-    margin-top: 1rem;
+    margin-top: 0.75rem;
 }
 
 .btn {
@@ -372,33 +384,33 @@ body {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--ocean-800) 0%, var(--ocean-600) 100%);
+    background: linear-gradient(90deg, var(--blue-start) 0%, var(--blue-mid) 50%, var(--blue-end) 100%);
     color: var(--white);
-    box-shadow: 0 4px 15px rgba(0, 119, 182, 0.4);
+    box-shadow: 0 4px 14px rgba(11, 136, 192, 0.35);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--ocean-900) 0%, var(--ocean-700) 100%);
-    box-shadow: 0 6px 20px rgba(0, 119, 182, 0.5);
+    background: linear-gradient(90deg, var(--blue-hover) 0%, var(--blue-start) 100%);
+    box-shadow: 0 6px 18px rgba(11, 136, 192, 0.45);
     transform: translateY(-1px);
 }
 
 .btn-outline {
-    background: rgba(255, 255, 255, 0.9);
-    color: var(--ocean-800);
-    border: 2px solid var(--ocean-700);
+    background: var(--white);
+    color: var(--blue-start);
+    border: 2px solid var(--blue-start);
 }
 
 .btn-outline:hover {
-    background: var(--ocean-100);
-    border-color: var(--ocean-900);
-    color: var(--ocean-900);
+    background: var(--blue-light);
+    border-color: var(--blue-hover);
+    color: var(--blue-hover);
 }
 
 .btn-warning {
     background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
     color: var(--white);
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
 }
 
 .btn-warning:hover {
@@ -407,13 +419,13 @@ body {
 }
 
 .btn-ghost {
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--white);
     color: var(--gray-700);
     border: 1px solid var(--gray-300);
 }
 
 .btn-ghost:hover {
-    background: #ffffff;
+    background: var(--gray-100);
     color: var(--gray-900);
 }
 
@@ -423,13 +435,13 @@ body {
 }
 
 .btn-lg {
-    padding: 0.8rem 1.6rem;
-    font-size: 1rem;
+    padding: 0.75rem 1.6rem;
+    font-size: 0.98rem;
 }
 
 .btn-xl {
-    padding: 1rem 2.5rem;
-    font-size: 1.15rem;
+    padding: 0.95rem 2.8rem;
+    font-size: 1.1rem;
     border-radius: var(--radius-md);
 }
 
@@ -445,11 +457,11 @@ body {
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 0.75rem;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
+    background: var(--white);
     padding: 0.75rem 1.25rem;
     border-radius: var(--radius-md);
-    border: 1px solid var(--card-border);
+    border: 1px solid var(--gray-200);
+    box-shadow: var(--shadow-sm);
 }
 
 .meta-left {
@@ -459,9 +471,9 @@ body {
 }
 
 .quiz-category-name {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: var(--ocean-900);
+    color: var(--gray-900);
 }
 
 .meta-right {
@@ -478,40 +490,39 @@ body {
 }
 
 .badge-ocean {
-    background: var(--ocean-700);
+    background: linear-gradient(90deg, var(--blue-start), var(--blue-mid));
     color: var(--white);
 }
 
 .badge-light {
-    background: var(--ocean-100);
-    color: var(--ocean-800);
-    border: 1px solid var(--ocean-300);
+    background: var(--blue-light);
+    color: var(--blue-start);
+    border: 1px solid rgba(11, 136, 192, 0.25);
 }
 
 /* PROGRESS BAR */
 .progress-bar-container {
-    height: 8px;
-    background: rgba(255, 255, 255, 0.7);
+    height: 7px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
     border-radius: var(--radius-full);
     overflow: hidden;
     margin-bottom: 1.25rem;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .progress-fill {
     height: 100%;
     width: 0%;
-    background: linear-gradient(90deg, var(--ocean-500) 0%, var(--ocean-800) 100%);
+    background: linear-gradient(90deg, var(--blue-start) 0%, var(--blue-end) 100%);
     transition: width 0.3s ease;
 }
 
-/* TABLE 4 CỘT CHUẨN */
+/* TABLE 4 CỘT CHUẨN — NỀN TRẮNG TINH */
 .table-container {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(14px);
+    background: var(--white);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
-    border: 1.5px solid var(--card-border);
+    border: 1px solid var(--gray-200);
     overflow-x: auto;
     margin-bottom: 1.5rem;
 }
@@ -524,12 +535,12 @@ body {
 }
 
 .vocab-table thead th {
-    background: linear-gradient(180deg, var(--ocean-800) 0%, var(--ocean-700) 100%);
+    background: linear-gradient(90deg, var(--blue-start) 0%, var(--blue-mid) 50%, var(--blue-end) 100%);
     color: var(--white);
-    padding: 1rem 0.75rem;
+    padding: 0.9rem 0.75rem;
     font-weight: 600;
     text-align: center;
-    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    border-right: 1px solid rgba(255, 255, 255, 0.18);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -551,11 +562,11 @@ body {
 }
 
 .vocab-table tbody tr:nth-child(even) {
-    background-color: rgba(240, 249, 255, 0.6);
+    background-color: var(--gray-50);
 }
 
 .vocab-table tbody tr:hover {
-    background-color: var(--ocean-100);
+    background-color: var(--blue-light);
 }
 
 .vocab-table td {
@@ -574,7 +585,7 @@ body {
     font-family: var(--font-jp);
     font-size: 1.05rem;
     font-weight: 500;
-    color: var(--ocean-900);
+    color: var(--gray-900);
 }
 
 .nihongo-wrapper {
@@ -592,13 +603,13 @@ body {
     padding: 0.2rem;
     border-radius: 4px;
     transition: transform 0.15s ease, background 0.15s ease;
-    opacity: 0.75;
+    opacity: 0.7;
 }
 
 .btn-speaker:hover {
     transform: scale(1.2);
     opacity: 1;
-    background: var(--ocean-200);
+    background: var(--blue-light);
 }
 
 .td-vietnam {
@@ -610,7 +621,7 @@ body {
     font-family: var(--font-jp);
     font-size: 1.15rem;
     font-weight: 600;
-    color: var(--ocean-900);
+    color: var(--blue-start);
 }
 
 .td-hanviet {
@@ -631,9 +642,9 @@ body {
 .quiz-input {
     width: 100%;
     padding: 0.55rem 0.75rem;
-    border: 2px solid var(--ocean-400);
+    border: 1.5px solid var(--gray-300);
     border-radius: var(--radius-sm);
-    font-size: 1rem;
+    font-size: 0.98rem;
     font-family: var(--font-jp);
     text-align: center;
     background: var(--white);
@@ -643,8 +654,8 @@ body {
 
 .quiz-input:focus {
     outline: none;
-    border-color: var(--ocean-700);
-    box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.3);
+    border-color: var(--blue-start);
+    box-shadow: 0 0 0 3px rgba(11, 136, 192, 0.2);
     background: #fff;
 }
 
@@ -676,7 +687,7 @@ td.cell-wrong {
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--correct-text);
-    background: rgba(76, 175, 80, 0.18);
+    background: rgba(76, 175, 80, 0.15);
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
     display: inline-block;
@@ -691,19 +702,17 @@ td.cell-wrong {
     margin-bottom: 2rem;
 }
 
-/* RESULT SECTION */
+/* RESULT SECTION — NỀN TRẮNG TINH */
 .result-section {
     animation: slideUp 0.4s ease-out;
     margin-bottom: 2.5rem;
 }
 
 .result-card {
-    background: var(--card-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: var(--white);
     border-radius: var(--radius-lg);
     padding: 2.5rem 1.5rem;
-    border: 2px solid var(--card-border);
+    border: 1px solid var(--gray-200);
     box-shadow: var(--shadow-lg);
     text-align: center;
 }
@@ -715,9 +724,9 @@ td.cell-wrong {
 }
 
 .result-title {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: var(--ocean-900);
+    color: var(--gray-900);
     margin-bottom: 0.4rem;
 }
 
@@ -762,12 +771,12 @@ td.cell-wrong {
 }
 
 .stat-total {
-    background: var(--ocean-100);
-    border: 2px solid var(--ocean-600);
+    background: var(--blue-light);
+    border: 2px solid var(--blue-start);
 }
 
 .stat-total .stat-num {
-    color: var(--ocean-900);
+    color: var(--blue-start);
 }
 
 .stat-num {
@@ -785,18 +794,16 @@ td.cell-wrong {
 
 /* FOOTER */
 .app-footer {
-    background: linear-gradient(135deg, rgba(2, 62, 138, 0.95) 0%, rgba(0, 119, 182, 0.92) 100%);
-    backdrop-filter: blur(8px);
-    color: var(--ocean-200);
+    background: linear-gradient(90deg, var(--blue-start) 0%, var(--blue-mid) 50%, var(--blue-end) 100%);
+    color: var(--white);
     text-align: center;
-    padding: 1.25rem 1rem;
+    padding: 1.1rem 1rem;
     font-size: 0.88rem;
     margin-top: auto;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .app-footer strong {
-    color: var(--white);
+    color: #ffffff;
 }
 
 /* UTILITIES & ANIMATIONS */
@@ -826,15 +833,25 @@ td.cell-wrong {
 }
 
 /* RESPONSIVE DESIGN */
+@media (max-width: 900px) {
+    .quiz-mode-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
+    .app-header {
+        height: 56px;
+        padding: 0 1rem;
+    }
+
     .header-text h1 {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
 
     .header-icon {
-        width: 44px;
-        height: 44px;
-        font-size: 1.8rem;
+        width: 32px;
+        height: 32px;
     }
 
     .card {
@@ -844,10 +861,6 @@ td.cell-wrong {
     .form-row {
         flex-direction: column;
         gap: 1rem;
-    }
-
-    .quiz-mode-grid {
-        grid-template-columns: 1fr 1fr;
     }
 
     .quiz-actions-bar {
