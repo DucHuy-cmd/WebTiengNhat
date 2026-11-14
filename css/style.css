@@ -1015,12 +1015,12 @@ td.cell-wrong {
 
 @media (max-width: 768px) {
     .app-header {
-        height: 56px;
-        padding: 0 1rem;
+        height: 54px;
+        padding: 0 0.85rem;
     }
 
     .header-text h1 {
-        font-size: 1.2rem;
+        font-size: 1.15rem;
     }
 
     .header-icon {
@@ -1028,17 +1028,132 @@ td.cell-wrong {
         height: 32px;
     }
 
+    .header-pwa-btn {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.78rem;
+    }
+
+    .main-container {
+        padding: 0 0.45rem;
+        margin: 0.75rem auto 1.5rem;
+    }
+
     .card {
-        padding: 1.25rem;
+        padding: 1.15rem 0.85rem;
     }
 
     .form-row {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.9rem;
+    }
+
+    /* BẢNG 4 CỘT VỪA KHÍT 100% MÀN HÌNH ĐIỆN THOẠI (KHÔNG CẦN CUỘN NGANG) */
+    .table-container {
+        border-radius: var(--radius-sm);
+        margin-bottom: 1rem;
+        overflow-x: hidden;
+        border-color: rgba(11, 136, 192, 0.2);
+    }
+
+    .vocab-table {
+        min-width: 0 !important;
+        width: 100% !important;
+        table-layout: fixed;
+        font-size: 0.8rem;
+    }
+
+    /* Tỉ lệ 5 cột trên điện thoại để vừa vặn hoàn hảo */
+    .col-stt { width: 30px !important; }
+    .col-nihongo { width: 28% !important; }
+    .col-vietnam { width: 31% !important; }
+    .col-kanji { width: 22% !important; }
+    .col-hanviet { width: 19% !important; }
+
+    .vocab-table thead th {
+        padding: 0.55rem 0.2rem !important;
+        font-size: 0.78rem !important;
+        letter-spacing: -0.2px;
+    }
+
+    .vocab-table td {
+        padding: 0.45rem 0.2rem !important;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.3;
+    }
+
+    .td-stt {
+        font-size: 0.72rem !important;
+        padding: 0.35rem 0.1rem !important;
+    }
+
+    .td-nihongo {
+        font-size: 0.82rem !important;
+    }
+
+    .nihongo-wrapper {
+        gap: 0.2rem;
+    }
+
+    .btn-speaker {
+        font-size: 0.72rem !important;
+        padding: 0.1rem !important;
+    }
+
+    .td-vietnam {
+        font-size: 0.76rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .td-kanji {
+        font-size: 0.92rem !important;
+    }
+
+    .td-hanviet {
+        font-size: 0.76rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .input-cell {
+        padding: 0.25rem 0.15rem !important;
+    }
+
+    .quiz-input {
+        font-size: 0.78rem !important;
+        padding: 0.4rem 0.25rem !important;
+        border-width: 1px !important;
+        border-radius: 4px !important;
+    }
+
+    .quiz-input::placeholder {
+        font-size: 0.68rem !important;
+    }
+
+    .quiz-tip-banner {
+        font-size: 0.78rem !important;
+        padding: 0.5rem 0.75rem !important;
+        line-height: 1.4 !important;
+    }
+
+    .quiz-meta-bar {
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .quiz-category-name {
+        font-size: 1.05rem !important;
+    }
+
+    .quiz-meta-bar .badge {
+        font-size: 0.75rem !important;
+        padding: 0.25rem 0.5rem !important;
     }
 
     .quiz-actions-bar {
         flex-direction: column;
+        gap: 0.65rem;
     }
 
     .quiz-actions-bar .btn {
@@ -1047,33 +1162,76 @@ td.cell-wrong {
 
     .btn-xl {
         width: 100%;
-        padding: 0.9rem 1.5rem;
+        padding: 0.85rem 1.5rem;
     }
 
     .stats-grid {
-        gap: 0.75rem;
+        gap: 0.65rem;
     }
 
     .stat-card {
-        min-width: 90px;
-        padding: 1rem;
+        min-width: 80px;
+        padding: 0.85rem;
         flex: 1;
     }
 
     .stat-num {
-        font-size: 2rem;
+        font-size: 1.75rem;
     }
 }
 
-@media (max-width: 480px) {
-    .quiz-mode-grid,
-    .filter-mode-grid {
-        grid-template-columns: 1fr;
+@media (max-width: 420px) {
+    .main-container {
+        padding: 0 0.3rem;
     }
 
-    .quiz-meta-bar {
-        flex-direction: column;
-        align-items: flex-start;
+    .card {
+        padding: 1rem 0.65rem;
+    }
+
+    .col-stt { width: 25px !important; }
+    .col-nihongo { width: 28% !important; }
+    .col-vietnam { width: 32% !important; }
+    .col-kanji { width: 21% !important; }
+    .col-hanviet { width: 19% !important; }
+
+    .vocab-table thead th {
+        font-size: 0.7rem !important;
+        padding: 0.45rem 0.12rem !important;
+    }
+
+    .vocab-table td {
+        font-size: 0.72rem !important;
+        padding: 0.38rem 0.12rem !important;
+    }
+
+    .td-stt {
+        font-size: 0.66rem !important;
+    }
+
+    .td-nihongo {
+        font-size: 0.76rem !important;
+    }
+
+    .td-vietnam {
+        font-size: 0.7rem !important;
+    }
+
+    .td-kanji {
+        font-size: 0.86rem !important;
+    }
+
+    .td-hanviet {
+        font-size: 0.7rem !important;
+    }
+
+    .quiz-input {
+        font-size: 0.72rem !important;
+        padding: 0.35rem 0.15rem !important;
+    }
+
+    .quiz-input::placeholder {
+        font-size: 0.6rem !important;
     }
 }
 
