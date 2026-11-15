@@ -354,7 +354,7 @@
 
     function romajiToHiragana(str) {
         if (!str) return '';
-        var s = str.toLowerCase().trim();
+        var s = str.toLowerCase();
         s = s.replace(/~/g, '～').replace(/[-–—_]/g, 'ー');
 
         // Double consonants (sokuon: kk, tt, ss, pp, etc. except nn)
@@ -388,7 +388,7 @@
             ['wa', 'わ'], ['wo', 'を'],
             ['ga', 'が'], ['gi', 'ぎ'], ['gu', 'ぐ'], ['ge', 'げ'], ['go', 'ご'],
             ['za', 'ざ'], ['ji', 'じ'], ['zu', 'ず'], ['ze', 'ぜ'], ['zo', 'ぞ'],
-            ['da', 'だ'], ['di', 'ぢ'], ['du', 'づ'], ['de', 'đ'],
+            ['da', 'だ'], ['di', 'ぢ'], ['du', 'づ'], ['de', 'で'], ['do', 'ど'],
             ['ba', 'ば'], ['bi', 'び'], ['bu', 'ぶ'], ['be', 'べ'], ['bo', 'ぼ'],
             ['pa', 'ぱ'], ['pi', 'ぴ'], ['pu', 'ぷ'], ['pe', 'ぺ'], ['po', 'ぽ'],
             ['a', 'あ'], ['i', 'い'], ['u', 'う'], ['e', 'え'], ['o', 'お'],
@@ -781,15 +781,34 @@
                         input.setAttribute('autocapitalize', 'off');
                         input.setAttribute('spellcheck', 'false');
 
-                        // Xử lý khi gõ chữ
+                        // Hỗ trợ gõ bộ gõ IME (Unikey / bàn phím tiếng Nhật / Telex)
+                        var isComposing = false;
+                        input.addEventListener('compositionstart', function () {
+                            isComposing = true;
+                        });
+                        input.addEventListener('compositionend', function () {
+                            isComposing = false;
+                            if (col === 'nihongo' && romajiConvertCheck && romajiConvertCheck.checked) {
+                                var original = input.value;
+                                var converted = romajiToHiragana(original);
+                                if (converted !== original) {
+                                    input.value = converted;
+                                }
+                            }
+                            updateProgress();
+                        });
+
+                        // Xử lý khi gõ chữ (BẢO TOÀN CON TRỎ CHUỘT, TUYỆT ĐỐI KHÔNG TỰ NHẢY Ô KHI ĐANG GÕ DỞ)
                         input.addEventListener('input', function (e) {
-                            if (col === 'nihongo') {
-                                if (romajiConvertCheck && romajiConvertCheck.checked) {
-                                    var original = e.target.value;
-                                    var converted = romajiToHiragana(original);
-                                    if (converted !== original) {
-                                        e.target.value = converted;
-                                    }
+                            if (col === 'nihongo' && romajiConvertCheck && romajiConvertCheck.checked && !isComposing) {
+                                var original = input.value;
+                                var selStart = input.selectionStart;
+                                var converted = romajiToHiragana(original);
+                                if (converted !== original) {
+                                    var diff = converted.length - original.length;
+                                    input.value = converted;
+                                    var newPos = Math.max(0, selStart + diff);
+                                    try { input.setSelectionRange(newPos, newPos); } catch (err) {}
                                 }
                             }
 
@@ -799,20 +818,15 @@
                                 td.classList.remove('cell-wrong');
                             }
 
-                            // AUTO-CHECK KHI VỪA GÕ ĐÚNG TỪ:
-                            // Nếu chuỗi vừa gõ khớp hoàn toàn với đáp án đúng -> Báo xanh và tự động nhảy tiếp ngay!
-                            var currentVal = input.value.trim();
-                            if (currentVal.length > 0 && isMatch(currentVal, cellValue, quizMode)) {
-                                checkSingleInput(input, { fromBlur: false });
-                                return;
-                            }
-
                             updateProgress();
                         });
 
-                        // Nhấn Enter kiểm tra tức thì (keydown)
+                        // Nhấn Enter kiểm tra tức thì (CHỈ bắt trên keydown, TUYỆT ĐỐI BỎ keyup để tránh nhảy kép ô)
                         input.addEventListener('keydown', function (e) {
-                            if (e.key === 'Enter' || e.keyCode === 13 || e.which === 13) {
+                            if (e.key === 'Enter' || e.keyCode === 13) {
+                                if (e.isComposing || isComposing) {
+                                    return;
+                                }
                                 e.preventDefault();
                                 if (e.shiftKey) {
                                     // Shift + Enter: bỏ qua sang câu tiếp theo
@@ -824,21 +838,8 @@
                             }
                         });
 
-                        // Nhấn Enter cho bộ gõ tiếng Việt / Unikey / IME (keyup)
-                        input.addEventListener('keyup', function (e) {
-                            if ((e.key === 'Enter' || e.keyCode === 13 || e.which === 13) && !input.disabled) {
-                                checkSingleInput(input, { fromBlur: false });
-                            }
-                        });
-
-                        // Khi người dùng click ra ngoài hoặc chuyển sang ô khác (blur / change)
+                        // Khi người dùng click ra ngoài hoặc chuyển sang ô khác (blur)
                         input.addEventListener('blur', function () {
-                            if (input.value.trim().length > 0 && !input.disabled) {
-                                checkSingleInput(input, { fromBlur: true });
-                            }
-                        });
-
-                        input.addEventListener('change', function () {
                             if (input.value.trim().length > 0 && !input.disabled) {
                                 checkSingleInput(input, { fromBlur: true });
                             }
