@@ -102,12 +102,11 @@
             limitInput.value = '25';
         }
 
-        populateCategories();
         bindEvents();
-        updateCategoryStatsUI();
         initPwaHandlers();
         initStreakHandlers();
         StreakManager.init();
+        initLevelSwitcher();
     }
 
     // ========================================================
@@ -438,6 +437,85 @@
     }
 
     // ========================================================
+    //  Multi-Level Management (JLPT N4 vs JLPT N3)
+    // ========================================================
+    var currentLevel = 'N4';
+    try {
+        currentLevel = localStorage.getItem('webtiengnhat_selected_level') || 'N4';
+    } catch (e) {}
+
+    // Auto-migrate legacy N4 progress if present
+    try {
+        if (!localStorage.getItem('webtiengnhat_progress_n4')) {
+            var legacy = localStorage.getItem('minna_vocab_progress_v2') || localStorage.getItem('webtiengnhat_progress');
+            if (legacy) {
+                localStorage.setItem('webtiengnhat_progress_n4', legacy);
+            }
+        }
+    } catch (e) {}
+
+    function getStorageKey() {
+        return currentLevel === 'N3' ? 'webtiengnhat_progress_n3' : 'webtiengnhat_progress_n4';
+    }
+
+    function getActiveVocabData() {
+        if (currentLevel === 'N3' && typeof vocabData_N3 !== 'undefined') {
+            return vocabData_N3;
+        }
+        return typeof vocabData !== 'undefined' ? vocabData : {};
+    }
+
+    function getActiveCategoryLabels() {
+        if (currentLevel === 'N3' && typeof categoryLabels_N3 !== 'undefined') {
+            return categoryLabels_N3;
+        }
+        return typeof categoryLabels !== 'undefined' ? categoryLabels : {};
+    }
+
+    function initLevelSwitcher() {
+        var btnN4 = document.getElementById('level-btn-n4');
+        var btnN3 = document.getElementById('level-btn-n3');
+        var headerTitle = document.getElementById('app-header-title');
+
+        function applyLevel(lvl) {
+            currentLevel = lvl;
+            try {
+                localStorage.setItem('webtiengnhat_selected_level', lvl);
+            } catch (e) {}
+
+            if (btnN4) btnN4.classList.toggle('active', lvl === 'N4');
+            if (btnN3) btnN3.classList.toggle('active', lvl === 'N3');
+
+            if (headerTitle) {
+                headerTitle.textContent = lvl === 'N3' ? 'Học Từ Vựng N3' : 'Học Từ Vựng N4';
+            }
+
+            populateCategories();
+            updateCategoryStatsUI();
+
+            if (quizSection && !quizSection.classList.contains('hidden')) {
+                hide(quizSection);
+                if (resultSection) hide(resultSection);
+                show(controlsSection);
+            }
+        }
+
+        if (btnN4) {
+            btnN4.addEventListener('click', function () {
+                if (currentLevel !== 'N4') applyLevel('N4');
+            });
+        }
+
+        if (btnN3) {
+            btnN3.addEventListener('click', function () {
+                if (currentLevel !== 'N3') applyLevel('N3');
+            });
+        }
+
+        applyLevel(currentLevel);
+    }
+
+    // ========================================================
     //  LocalStorage Progress Management
     // ========================================================
 
@@ -447,7 +525,7 @@
 
     function loadProgress() {
         try {
-            var data = localStorage.getItem(STORAGE_KEY);
+            var data = localStorage.getItem(getStorageKey());
             return data ? JSON.parse(data) : {};
         } catch (e) {
             return {};
@@ -456,7 +534,7 @@
 
     function saveProgress(progress) {
         try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+            localStorage.setItem(getStorageKey(), JSON.stringify(progress));
         } catch (e) {}
     }
 
@@ -467,7 +545,8 @@
 
     function getCategoryProgress(category) {
         var progress = loadProgress();
-        var items = vocabData[category] || [];
+        var allData = getActiveVocabData();
+        var items = allData[category] || [];
         var unlearned = 0;
         var learned = 0;
         var review = 0;
@@ -502,12 +581,14 @@
 
     function populateCategories() {
         categorySelect.innerHTML = '';
-        for (var key in categoryLabels) {
-            if (categoryLabels.hasOwnProperty(key)) {
-                var list = vocabData[key] || [];
+        var labels = getActiveCategoryLabels();
+        var data = getActiveVocabData();
+        for (var key in labels) {
+            if (labels.hasOwnProperty(key)) {
+                var list = data[key] || [];
                 var option = document.createElement('option');
                 option.value = key;
-                option.textContent = categoryLabels[key] + ' (' + list.length + ' từ)';
+                option.textContent = labels[key] + ' (' + list.length + ' từ)';
                 categorySelect.appendChild(option);
             }
         }
@@ -534,11 +615,11 @@
         // Reset progress of currently selected category
         resetCatBtn.addEventListener('click', function () {
             var cat = categorySelect.value;
-            var catName = categoryLabels[cat] || 'bộ từ này';
-            var msg = 'Bạn có chắc chắn muốn xóa tiến độ của ' + catName + ' để học lại từ đầu?';
+            var catName = getActiveCategoryLabels()[cat] || 'bộ từ này';
+            var msg = 'Bạn có chắc chắn muốn xóa tiến độ của ' + catName + ' (' + currentLevel + ') để học lại từ đầu?';
             if (window.confirm(msg)) {
                 var progress = loadProgress();
-                var items = vocabData[cat] || [];
+                var items = getActiveVocabData()[cat] || [];
                 items.forEach(function (it) {
                     delete progress[getWordKey(cat, it)];
                 });
@@ -691,7 +772,7 @@
         quizMode = quizModeSelect ? quizModeSelect.value : 'nihongo';
 
         if (!isRetry) {
-            var rawList = (vocabData[currentCategory] || []).map(function (item) {
+            var rawList = (getActiveVocabData()[currentCategory] || []).map(function (item) {
                 return {
                     nihongo: item.nihongo,
                     vietnam: item.vietnam,
@@ -710,7 +791,7 @@
                     return getWordStatus(progress, currentCategory, it) === 'unlearned';
                 });
                 if (filteredList.length === 0) {
-                    alert('🎉 Chúc mừng bạn!\nBạn đã học hết toàn bộ từ mới trong ' + categoryLabels[currentCategory] + ' rồi!\nHãy chuyển sang chế độ "Ôn từ đã thuộc" hoặc "Học kèm từ cũ" để củng cố nhé.');
+                    alert('🎉 Chúc mừng bạn!\nBạn đã học hết toàn bộ từ mới trong ' + getActiveCategoryLabels()[currentCategory] + ' rồi!\nHãy chuyển sang chế độ "Ôn từ đã thuộc" hoặc "Học kèm từ cũ" để củng cố nhé.');
                     return;
                 }
             } else if (filterMode === 'review') {
@@ -761,7 +842,7 @@
         });
 
         // Update headers
-        quizTitle.textContent = categoryLabels[currentCategory] || 'Từ vựng';
+        quizTitle.textContent = getActiveCategoryLabels()[currentCategory] || 'Từ vựng';
         quizBadge.textContent = 'Đang học: ' + columnNames[quizMode];
         quizCounter.textContent = '0 / ' + currentData.length + ' từ';
         updateProgress();
@@ -1363,7 +1444,7 @@
         var updatedStats = getCategoryProgress(currentCategory);
         if (savedProgressText) {
             savedProgressText.innerHTML = '💾 <strong>Đã lưu tiến độ vào máy!</strong> ' + 
-                categoryLabels[currentCategory] + ' hiện có: <strong>' + updatedStats.learned + '</strong> từ đã thuộc, ' +
+                getActiveCategoryLabels()[currentCategory] + ' hiện có: <strong>' + updatedStats.learned + '</strong> từ đã thuộc, ' +
                 '<strong>' + updatedStats.review + '</strong> từ cần ôn, còn <strong>' + updatedStats.unlearned + '</strong> từ mới.';
         }
 

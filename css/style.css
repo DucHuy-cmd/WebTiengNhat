@@ -1779,3 +1779,138 @@ td.cell-wrong {
         display: none; /* Ẩn chữ "ngày" trên điện thoại để tiết kiệm diện tích */
     }
 }
+
+/* ========================================================
+   LEVEL SWITCHER (JLPT N4 vs JLPT N3)
+   ======================================================== */
+
+.level-switcher-container {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+.level-switcher-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.level-switcher-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--gray-800);
+}
+
+.level-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.level-tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    border: 2px solid #e2e8f0;
+    background: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-align: left;
+}
+
+.level-tab-btn:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.level-tab-badge {
+    font-size: 1rem;
+    font-weight: 800;
+    padding: 0.35rem 0.65rem;
+    border-radius: 8px;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+}
+
+.badge-n4 {
+    background: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid #7dd3fc;
+}
+
+.badge-n3 {
+    background: #f3e8ff;
+    color: #7c3aed;
+    border: 1px solid #c4b5fd;
+}
+
+.level-tab-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.level-tab-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--gray-800);
+}
+
+.level-tab-sub {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 0.1rem;
+}
+
+/* Active State N4 */
+.level-tab-btn.active[data-level="N4"] {
+    background: #f0f9ff;
+    border-color: #0284c7;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+}
+
+.level-tab-btn.active[data-level="N4"] .badge-n4 {
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+}
+
+/* Active State N3 */
+.level-tab-btn.active[data-level="N3"] {
+    background: #faf5ff;
+    border-color: #7c3aed;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+}
+
+.level-tab-btn.active[data-level="N3"] .badge-n3 {
+    background: #7c3aed;
+    color: #ffffff;
+    border-color: #7c3aed;
+}
+
+@media (max-width: 600px) {
+    .level-tabs {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .level-tab-btn {
+        padding: 0.6rem 0.8rem;
+    }
+    
+    .level-tab-badge {
+        font-size: 0.9rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .level-tab-name {
+        font-size: 0.88rem;
+    }
+}

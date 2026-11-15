@@ -3,7 +3,7 @@
    Supports 100% Offline Learning with Network-First Strategy
    ======================================================== */
 
-const CACHE_NAME = 'webtiengnhat-v7';
+const CACHE_NAME = 'webtiengnhat-v8';
 
 const STATIC_ASSETS = [
     './',
@@ -11,6 +11,7 @@ const STATIC_ASSETS = [
     './css/style.css',
     './js/app.js',
     './js/data.js',
+    './js/data_n3.js',
     './manifest.json',
     './assets/icon-180.png',
     './assets/icon-192.png',

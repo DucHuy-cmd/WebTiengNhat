@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=7">
+    <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
     <header class="app-header">
@@ -35,7 +35,7 @@
                     <span class="wave-emoji">🌊</span>
                 </div>
                 <div class="header-text">
-                    <h1>Học Từ Vựng N4</h1>
+                    <h1 id="app-header-title">Học Từ Vựng N4</h1>
                 </div>
             </div>
             <div class="header-actions">
@@ -58,6 +58,30 @@
         <!-- BẢNG ĐIỀU KHIỂN -->
         <section class="card controls-card" id="controls-section">
             <h2 class="card-title">⚙️ Cài Đặt Bài Học</h2>
+
+            <!-- CHỌN CẤP ĐỘ HỌC (JLPT N4 vs JLPT N3) -->
+            <div class="level-switcher-container">
+                <div class="level-switcher-header">
+                    <span class="label-icon">🏆</span>
+                    <span class="level-switcher-title">Chọn cấp độ JLPT ôn luyện:</span>
+                </div>
+                <div class="level-tabs" role="tablist">
+                    <button type="button" class="level-tab-btn active" data-level="N4" id="level-btn-n4">
+                        <span class="level-tab-badge badge-n4">N4</span>
+                        <div class="level-tab-info">
+                            <span class="level-tab-name">Minna no Nihongo</span>
+                            <span class="level-tab-sub">2.303 từ • Bài 1–50</span>
+                        </div>
+                    </button>
+                    <button type="button" class="level-tab-btn" data-level="N3" id="level-btn-n3">
+                        <span class="level-tab-badge badge-n3">N3</span>
+                        <div class="level-tab-info">
+                            <span class="level-tab-name">Mimikara & Tổng Hợp</span>
+                            <span class="level-tab-sub">2.039 từ • Trọn bộ N3</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
             
             <!-- HÀNG 1: Chọn bộ từ & Số lượng từ -->
             <div class="form-row">
@@ -356,8 +380,9 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/data.js?v=7"></script>
-    <script src="js/app.js?v=7"></script>
+    <script src="js/data.js?v=8"></script>
+    <script src="js/data_n3.js?v=8"></script>
+    <script src="js/app.js?v=8"></script>
 
     <!-- PWA Service Worker Registration -->
     <script>
