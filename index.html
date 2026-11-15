@@ -25,20 +25,32 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=6">
+    <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
     <header class="app-header">
         <div class="header-container">
-            <div class="header-icon">
-                <span class="wave-emoji">🌊</span>
+            <div class="header-brand">
+                <div class="header-icon">
+                    <span class="wave-emoji">🌊</span>
+                </div>
+                <div class="header-text">
+                    <h1>Học Từ Vựng N4</h1>
+                </div>
             </div>
-            <div class="header-text">
-                <h1>Học Từ Vựng N4</h1>
+            <div class="header-actions">
+                <!-- NÚT CHUỖI NGÀY HỌC (STREAK - NGỌN LỬA ĐEN / XANH) -->
+                <button id="streak-header-btn" class="header-streak-btn flame-black" type="button" title="Chuỗi ngày học (Streak) - Bấm để xem chi tiết">
+                    <svg class="streak-flame-icon" viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M12 23c-4.97 0-9-3.8-9-8.5 0-3.32 2.12-6.57 4.2-8.86.63-.7 1.76-.23 1.76.71 0 1.25.67 2.45 1.75 3.03.27.15.6-.04.6-.35 0-1.89.87-4.14 2.58-6.07.6-.68 1.71-.23 1.71.69 0 2.22 1.48 4.25 3.52 4.96.34.12.68-.13.68-.49 0-.96.3-1.85.74-2.58.55-.91 1.95-.5 1.95.57C21.49 11.23 21 16.32 21 17.5 21 20.54 16.97 23 12 23z"/>
+                    </svg>
+                    <span id="streak-days-count" class="streak-days-text">0</span>
+                    <span class="streak-days-label">ngày</span>
+                </button>
+                <button id="pwa-install-btn" class="header-pwa-btn" type="button" title="Cài ứng dụng về iPhone hoặc Android">
+                    <span class="pwa-icon">📲</span> Cài App
+                </button>
             </div>
-            <button id="pwa-install-btn" class="header-pwa-btn" type="button" title="Cài ứng dụng về iPhone hoặc Android">
-                <span class="pwa-icon">📲</span> Cài App
-            </button>
         </div>
     </header>
 
@@ -258,9 +270,94 @@
         </div>
     </div>
 
+    <!-- MODAL CHI TIẾT CHUỖI NGÀY HỌC (STREAK) -->
+    <div id="streak-modal" class="pwa-modal hidden">
+        <div class="pwa-modal-backdrop" id="streak-modal-backdrop"></div>
+        <div class="pwa-modal-card streak-modal-card">
+            <div class="pwa-modal-header">
+                <h3>🔥 Chuỗi Ngày Học (Streak)</h3>
+                <button type="button" id="close-streak-modal-btn" class="modal-close-btn" aria-label="Đóng">&times;</button>
+            </div>
+            <div class="pwa-modal-body streak-modal-body">
+                <div class="streak-flame-display" id="modal-flame-display">
+                    <div class="flame-big-circle flame-black" id="modal-flame-circle">
+                        <svg class="flame-big-svg" viewBox="0 0 24 24">
+                            <path d="M12 23c-4.97 0-9-3.8-9-8.5 0-3.32 2.12-6.57 4.2-8.86.63-.7 1.76-.23 1.76.71 0 1.25.67 2.45 1.75 3.03.27.15.6-.04.6-.35 0-1.89.87-4.14 2.58-6.07.6-.68 1.71-.23 1.71.69 0 2.22 1.48 4.25 3.52 4.96.34.12.68-.13.68-.49 0-.96.3-1.85.74-2.58.55-.91 1.95-.5 1.95.57C21.49 11.23 21 16.32 21 17.5 21 20.54 16.97 23 12 23z"/>
+                        </svg>
+                    </div>
+                    <div class="streak-count-big">
+                        <span id="modal-streak-days">0</span>
+                        <small>ngày liên tiếp</small>
+                    </div>
+                    <div class="streak-status-badge status-pending" id="modal-streak-status-badge">
+                        Ngọn lửa đang tắt. Hoàn thành 20 từ hôm nay để thắp sáng!
+                    </div>
+                </div>
+
+                <div class="streak-daily-task">
+                    <div class="streak-task-header">
+                        <span class="task-title">🎯 Mục tiêu hôm nay:</span>
+                        <span class="task-progress-text" id="modal-streak-progress-text">0 / 20 từ (0%)</span>
+                    </div>
+                    <div class="streak-progress-track">
+                        <div class="streak-progress-fill" id="modal-streak-progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <div class="streak-countdown-box">
+                    <span class="countdown-icon">⏳</span>
+                    <div class="countdown-info">
+                        <div class="countdown-label">Thời gian còn lại trước 12:00 đêm:</div>
+                        <div class="countdown-timer" id="modal-streak-countdown">-- giờ -- phút -- giây</div>
+                    </div>
+                </div>
+
+                <div class="streak-stats-row">
+                    <div class="streak-stat-item">
+                        <div class="stat-num" id="modal-best-streak">0 ngày</div>
+                        <div class="stat-name">🏆 Kỷ lục dài nhất</div>
+                    </div>
+                    <div class="streak-stat-item">
+                        <div class="stat-num" id="modal-total-learned-today">0 từ</div>
+                        <div class="stat-name">✨ Đã làm hôm nay</div>
+                    </div>
+                </div>
+
+                <div class="streak-rule-note">
+                    💡 <strong>Luật chơi:</strong> Mỗi ngày cần làm đúng tối thiểu <strong>20 từ</strong> để thắp sáng ngọn lửa xanh rực rỡ và tăng chuỗi. Nếu qua 12h đêm mà không hoàn thành, chuỗi sẽ mất và ngọn lửa trở về màu đen!
+                </div>
+            </div>
+            <div class="pwa-modal-footer">
+                <button type="button" id="streak-modal-start-btn" class="btn btn-primary">🚀 Luyện Tập Ngay (20 từ)</button>
+                <button type="button" id="close-streak-modal-btn-2" class="btn btn-outline">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CELEBRATION MODAL KHI THẮP SÁNG NGỌN LỬA XANH -->
+    <div id="streak-celebration-modal" class="pwa-modal hidden">
+        <div class="pwa-modal-backdrop" id="celebration-backdrop"></div>
+        <div class="pwa-modal-card celebration-card">
+            <div class="celebration-flame-circle flame-blue">
+                <svg class="flame-big-svg flame-pulse-anim" viewBox="0 0 24 24">
+                    <path d="M12 23c-4.97 0-9-3.8-9-8.5 0-3.32 2.12-6.57 4.2-8.86.63-.7 1.76-.23 1.76.71 0 1.25.67 2.45 1.75 3.03.27.15.6-.04.6-.35 0-1.89.87-4.14 2.58-6.07.6-.68 1.71-.23 1.71.69 0 2.22 1.48 4.25 3.52 4.96.34.12.68-.13.68-.49 0-.96.3-1.85.74-2.58.55-.91 1.95-.5 1.95.57C21.49 11.23 21 16.32 21 17.5 21 20.54 16.97 23 12 23z"/>
+                </svg>
+            </div>
+            <h2 class="celebration-title">🎉 THẮP SÁNG NGỌN LỬA XANH!</h2>
+            <p class="celebration-desc">Tuyệt vời! Bạn đã hoàn thành chỉ tiêu <strong>20 từ</strong> của ngày hôm nay!</p>
+            <div class="celebration-streak-pill">
+                Chuỗi hiện tại: <strong id="celebration-streak-days">1</strong> ngày liên tiếp 🔥
+            </div>
+            <p class="celebration-tip">Hãy quay lại vào ngày mai trước 12h đêm để tiếp tục giữ vững chuỗi nhé!</p>
+            <div class="celebration-footer">
+                <button type="button" id="celebration-close-btn" class="btn btn-primary btn-lg">Tuyệt vời, tiếp tục học! 🚀</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
-    <script src="js/data.js?v=6"></script>
-    <script src="js/app.js?v=6"></script>
+    <script src="js/data.js?v=7"></script>
+    <script src="js/app.js?v=7"></script>
 
     <!-- PWA Service Worker Registration -->
     <script>

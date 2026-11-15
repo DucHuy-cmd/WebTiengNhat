@@ -106,6 +106,8 @@
         bindEvents();
         updateCategoryStatsUI();
         initPwaHandlers();
+        initStreakHandlers();
+        StreakManager.init();
     }
 
     // ========================================================
@@ -169,6 +171,270 @@
         if (closePwaModalBtn) closePwaModalBtn.addEventListener('click', closeModal);
         if (pwaModalDismissBtn) pwaModalDismissBtn.addEventListener('click', closeModal);
         if (pwaModalBackdrop) pwaModalBackdrop.addEventListener('click', closeModal);
+    }
+
+    // ========================================================
+    //  STREAK MANAGEMENT (CHUỖI NGÀY HỌC — NGỌN LỬA ĐEN / XANH)
+    // ========================================================
+    var STREAK_KEY = 'webtiengnhat_streak';
+
+    var StreakManager = {
+        data: {
+            currentStreak: 0,
+            bestStreak: 0,
+            lastCompletedDate: null,
+            todayDate: '',
+            todayWordsCount: 0
+        },
+        _timerInterval: null,
+
+        getLocalDateString: function (d) {
+            d = d || new Date();
+            var y = d.getFullYear();
+            var m = String(d.getMonth() + 1).padStart(2, '0');
+            var day = String(d.getDate()).padStart(2, '0');
+            return y + '-' + m + '-' + day;
+        },
+
+        getYesterdayDateString: function () {
+            var d = new Date(Date.now() - 86400000);
+            return this.getLocalDateString(d);
+        },
+
+        init: function () {
+            this.load();
+        },
+
+        load: function () {
+            try {
+                var raw = localStorage.getItem(STREAK_KEY);
+                if (raw) {
+                    this.data = JSON.parse(raw);
+                }
+            } catch (e) {
+                this.data = {};
+            }
+
+            this.data.currentStreak = Number(this.data.currentStreak) || 0;
+            this.data.bestStreak = Number(this.data.bestStreak) || 0;
+            this.data.lastCompletedDate = this.data.lastCompletedDate || null;
+            this.data.todayWordsCount = Number(this.data.todayWordsCount) || 0;
+
+            var todayStr = this.getLocalDateString();
+            var yesterdayStr = this.getYesterdayDateString();
+
+            // Kiểm tra chuyển ngày (qua 12h đêm)
+            if (this.data.todayDate !== todayStr) {
+                // Đã bước sang ngày mới!
+                if (this.data.lastCompletedDate === yesterdayStr) {
+                    // Ngày hôm qua đã hoàn thành: bảo toàn chuỗi!
+                } else if (this.data.lastCompletedDate === todayStr) {
+                    // Đã hoàn thành hôm nay
+                } else {
+                    // Hôm qua không hoàn thành -> ĐỨT CHUỖI! Chuỗi về 0
+                    this.data.currentStreak = 0;
+                }
+
+                // Sang ngày mới: bộ đếm số từ hôm nay reset về 0
+                this.data.todayWordsCount = 0;
+                this.data.todayDate = todayStr;
+                this.save();
+            }
+
+            this.updateUI();
+        },
+
+        save: function () {
+            try {
+                localStorage.setItem(STREAK_KEY, JSON.stringify(this.data));
+            } catch (e) {}
+        },
+
+        isTodayCompleted: function () {
+            var todayStr = this.getLocalDateString();
+            return this.data.lastCompletedDate === todayStr && this.data.todayWordsCount >= 20;
+        },
+
+        onWordCorrect: function () {
+            var todayStr = this.getLocalDateString();
+            if (this.data.todayDate !== todayStr) {
+                this.load(); // Cập nhật ngày nếu phiên làm việc chuyển qua 12h đêm
+            }
+
+            this.data.todayWordsCount = (this.data.todayWordsCount || 0) + 1;
+
+            // Kiểm tra mốc 20 từ để thắp sáng ngọn lửa xanh
+            if (this.data.todayWordsCount >= 20 && this.data.lastCompletedDate !== todayStr) {
+                this.data.lastCompletedDate = todayStr;
+                this.data.currentStreak = (this.data.currentStreak || 0) + 1;
+                if (this.data.currentStreak > this.data.bestStreak) {
+                    this.data.bestStreak = this.data.currentStreak;
+                }
+                this.save();
+                this.updateUI();
+                this.triggerCelebration();
+            } else {
+                this.save();
+                this.updateUI();
+            }
+        },
+
+        triggerCelebration: function () {
+            var modal = document.getElementById('streak-celebration-modal');
+            var daysEl = document.getElementById('celebration-streak-days');
+            if (daysEl) daysEl.textContent = this.data.currentStreak;
+            if (modal) modal.classList.remove('hidden');
+            playBeep('correct');
+        },
+
+        updateUI: function () {
+            var isCompleted = this.isTodayCompleted();
+            var btn = document.getElementById('streak-header-btn');
+            var countEl = document.getElementById('streak-days-count');
+            if (countEl) countEl.textContent = this.data.currentStreak;
+
+            if (btn) {
+                if (isCompleted) {
+                    btn.classList.remove('flame-black');
+                    btn.classList.add('flame-blue');
+                    btn.setAttribute('title', '🔥 Chuỗi ' + this.data.currentStreak + ' ngày (Đã thắp sáng hôm nay!)');
+                } else {
+                    btn.classList.remove('flame-blue');
+                    btn.classList.add('flame-black');
+                    var remaining = Math.max(0, 20 - (this.data.todayWordsCount || 0));
+                    btn.setAttribute('title', '🔥 Chuỗi ' + this.data.currentStreak + ' ngày (Còn ' + remaining + ' từ nữa để thắp sáng)');
+                }
+            }
+
+            this.updateModal();
+        },
+
+        updateModal: function () {
+            var modal = document.getElementById('streak-modal');
+            if (!modal || modal.classList.contains('hidden')) return;
+
+            var isCompleted = this.isTodayCompleted();
+            var circle = document.getElementById('modal-flame-circle');
+            var daysEl = document.getElementById('modal-streak-days');
+            var statusBadge = document.getElementById('modal-streak-status-badge');
+            var progressText = document.getElementById('modal-streak-progress-text');
+            var progressFill = document.getElementById('modal-streak-progress-fill');
+            var bestStreakEl = document.getElementById('modal-best-streak');
+            var todayTotalEl = document.getElementById('modal-total-learned-today');
+
+            if (daysEl) daysEl.textContent = this.data.currentStreak;
+            if (bestStreakEl) bestStreakEl.textContent = this.data.bestStreak + ' ngày';
+            if (todayTotalEl) todayTotalEl.textContent = (this.data.todayWordsCount || 0) + ' từ';
+
+            var count = this.data.todayWordsCount || 0;
+            var pct = Math.min(100, Math.round((count / 20) * 100));
+
+            if (progressText) progressText.textContent = count + ' / 20 từ (' + pct + '%)';
+            if (progressFill) progressFill.style.width = pct + '%';
+
+            if (circle) {
+                circle.className = 'flame-big-circle ' + (isCompleted ? 'flame-blue' : 'flame-black');
+            }
+
+            if (statusBadge) {
+                if (isCompleted) {
+                    statusBadge.className = 'streak-status-badge status-active';
+                    statusBadge.innerHTML = '✨ Đã thắp sáng ngọn lửa xanh hôm nay!';
+                } else {
+                    statusBadge.className = 'streak-status-badge status-pending';
+                    var rem = Math.max(0, 20 - count);
+                    statusBadge.innerHTML = '⏳ Còn <strong>' + rem + ' từ</strong> nữa để thắp sáng!';
+                }
+            }
+        },
+
+        startCountdownTimer: function () {
+            function updateTimer() {
+                var el = document.getElementById('modal-streak-countdown');
+                if (!el) return;
+                var now = new Date();
+                var midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+                var diff = Math.max(0, midnight - now);
+                var h = Math.floor(diff / 3600000);
+                var m = Math.floor((diff % 3600000) / 60000);
+                var s = Math.floor((diff % 60000) / 1000);
+                el.textContent = (h < 10 ? '0' + h : h) + ' giờ ' + (m < 10 ? '0' + m : m) + ' phút ' + (s < 10 ? '0' + s : s) + ' giây';
+            }
+            updateTimer();
+            if (this._timerInterval) clearInterval(this._timerInterval);
+            this._timerInterval = setInterval(updateTimer, 1000);
+        },
+
+        stopCountdownTimer: function () {
+            if (this._timerInterval) {
+                clearInterval(this._timerInterval);
+                this._timerInterval = null;
+            }
+        }
+    };
+
+    function initStreakHandlers() {
+        var streakHeaderBtn = document.getElementById('streak-header-btn');
+        var streakModal = document.getElementById('streak-modal');
+        var streakModalBackdrop = document.getElementById('streak-modal-backdrop');
+        var closeStreakModalBtn = document.getElementById('close-streak-modal-btn');
+        var closeStreakModalBtn2 = document.getElementById('close-streak-modal-btn-2');
+        var streakModalStartBtn = document.getElementById('streak-modal-start-btn');
+
+        var celebrationModal = document.getElementById('streak-celebration-modal');
+        var celebrationBackdrop = document.getElementById('celebration-backdrop');
+        var celebrationCloseBtn = document.getElementById('celebration-close-btn');
+
+        function openStreakModal() {
+            if (streakModal) {
+                streakModal.classList.remove('hidden');
+                StreakManager.updateModal();
+                StreakManager.startCountdownTimer();
+            }
+        }
+
+        function closeStreakModal() {
+            if (streakModal) {
+                streakModal.classList.add('hidden');
+                StreakManager.stopCountdownTimer();
+            }
+        }
+
+        if (streakHeaderBtn) streakHeaderBtn.addEventListener('click', openStreakModal);
+        if (streakModalBackdrop) streakModalBackdrop.addEventListener('click', closeStreakModal);
+        if (closeStreakModalBtn) closeStreakModalBtn.addEventListener('click', closeStreakModal);
+        if (closeStreakModalBtn2) closeStreakModalBtn2.addEventListener('click', closeStreakModal);
+
+        if (streakModalStartBtn) {
+            streakModalStartBtn.addEventListener('click', function () {
+                closeStreakModal();
+                if (limitInput) {
+                    limitInput.value = '20';
+                    if (chipBtns) {
+                        chipBtns.forEach(function (b) {
+                            if (b.getAttribute('data-value') === '20') {
+                                b.classList.add('active');
+                            } else {
+                                b.classList.remove('active');
+                            }
+                        });
+                    }
+                }
+                if (startBtn) {
+                    startBtn.click();
+                    var quizSec = document.getElementById('quiz-section');
+                    if (quizSec) {
+                        quizSec.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+        }
+
+        function closeCelebration() {
+            if (celebrationModal) celebrationModal.classList.add('hidden');
+        }
+        if (celebrationBackdrop) celebrationBackdrop.addEventListener('click', closeCelebration);
+        if (celebrationCloseBtn) celebrationCloseBtn.addEventListener('click', closeCelebration);
     }
 
     // ========================================================
@@ -667,6 +933,9 @@
             td.classList.add('cell-correct');
             input.disabled = true;
 
+            // Ghi nhận chuỗi ngày học (Streak 20 từ)
+            StreakManager.onWordCorrect();
+
             if (word) {
                 word._checked = true;
                 var progress = loadProgress();
@@ -995,6 +1264,7 @@
             var td         = input.parentElement;
             var word       = currentData[rowIndex];
 
+            var alreadyDisabled = input.disabled;
             var correctMatch = isMatch(userAnswer, answer, quizMode);
 
             if (correctMatch) {
@@ -1004,6 +1274,10 @@
                 td.classList.remove('cell-wrong');
                 td.classList.add('cell-correct');
                 input.disabled = true;
+
+                if (!alreadyDisabled) {
+                    StreakManager.onWordCorrect();
+                }
 
                 if (word && word._hadWrong) {
                     wrong++;

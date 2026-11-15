@@ -88,7 +88,22 @@ body {
     margin: 0 auto;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.75rem;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .header-icon {
@@ -1240,7 +1255,6 @@ td.cell-wrong {
    ======================================================== */
 
 .header-pwa-btn {
-    margin-left: auto;
     background: rgba(255, 255, 255, 0.22);
     border: 1px solid rgba(255, 255, 255, 0.45);
     color: #ffffff;
@@ -1413,4 +1427,355 @@ td.cell-wrong {
     display: flex;
     justify-content: flex-end;
     gap: 0.75rem;
+}
+
+/* ========================================================
+   STREAK (CHUỖI NGÀY HỌC) — NGỌN LỬA ĐEN / XANH
+   ======================================================== */
+
+.header-streak-btn {
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.42rem 0.85rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+/* Trạng thái 1: Chưa có chuỗi / Chưa học xong 20 từ hôm nay -> NGỌN LỬA MÀU ĐEN */
+.header-streak-btn.flame-black {
+    background: rgba(15, 23, 42, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #f1f5f9;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.header-streak-btn.flame-black .streak-flame-icon {
+    fill: #090d16;
+    stroke: #cbd5e1;
+    stroke-width: 1.5px;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+    transition: all 0.25s ease;
+}
+
+.header-streak-btn.flame-black:hover {
+    background: rgba(15, 23, 42, 0.75);
+    border-color: rgba(255, 255, 255, 0.45);
+    transform: translateY(-1px);
+}
+
+/* Trạng thái 2: Đã đạt mốc 20 từ hôm nay -> NGỌN LỬA MÀU XANH RỰC RỠ */
+.header-streak-btn.flame-blue {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.4), rgba(6, 182, 212, 0.3));
+    border: 1px solid #38bdf8;
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(14, 165, 233, 0.55), inset 0 0 8px rgba(56, 189, 248, 0.25);
+}
+
+.header-streak-btn.flame-blue .streak-flame-icon {
+    fill: #00e5ff;
+    stroke: #ffffff;
+    stroke-width: 0.5px;
+    filter: drop-shadow(0 0 6px #00e5ff) drop-shadow(0 0 12px #0284c7);
+    animation: flamePulse 1.8s ease-in-out infinite;
+}
+
+.header-streak-btn.flame-blue:hover {
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.55), rgba(6, 182, 212, 0.45));
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.75);
+}
+
+@keyframes flamePulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 6px #00e5ff) drop-shadow(0 0 10px #0284c7);
+    }
+    50% {
+        transform: scale(1.14);
+        filter: drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 16px #00e5ff);
+    }
+}
+
+/* Streak Modal Body Styling */
+.streak-modal-card {
+    max-width: 480px;
+}
+
+.streak-flame-display {
+    text-align: center;
+    padding: 0.75rem 0 1.25rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.flame-big-circle {
+    width: 82px;
+    height: 82px;
+    border-radius: 50%;
+    margin: 0 auto 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.flame-big-circle.flame-black {
+    background: #1e293b;
+    border: 2px solid #475569;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.flame-big-circle.flame-black .flame-big-svg {
+    width: 46px;
+    height: 46px;
+    fill: #090d16;
+    stroke: #94a3b8;
+    stroke-width: 1.2px;
+}
+
+.flame-big-circle.flame-blue {
+    background: radial-gradient(circle, rgba(14, 165, 233, 0.35), rgba(3, 105, 161, 0.15));
+    border: 2px solid #38bdf8;
+    box-shadow: 0 0 25px rgba(14, 165, 233, 0.55), inset 0 0 15px rgba(56, 189, 248, 0.3);
+}
+
+.flame-big-circle.flame-blue .flame-big-svg {
+    width: 46px;
+    height: 46px;
+    fill: #00e5ff;
+    stroke: #e0f2fe;
+    stroke-width: 0.5px;
+    filter: drop-shadow(0 0 12px #00e5ff);
+    animation: flamePulse 1.8s infinite;
+}
+
+.streak-count-big {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: var(--gray-900);
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+}
+
+.streak-count-big small {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--gray-500);
+    margin-left: 0.25rem;
+}
+
+.streak-status-badge {
+    display: inline-block;
+    padding: 0.3rem 0.85rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+}
+
+.streak-status-badge.status-pending {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+.streak-status-badge.status-active {
+    background: #e0f2fe;
+    color: #0284c7;
+    border: 1px solid #7dd3fc;
+    font-weight: 700;
+}
+
+.streak-daily-task {
+    padding: 1rem 0;
+}
+
+.streak-task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.task-title {
+    font-weight: 600;
+    color: var(--gray-800);
+}
+
+.task-progress-text {
+    font-weight: 700;
+    color: var(--blue-start);
+}
+
+.streak-progress-track {
+    background: #e2e8f0;
+    height: 12px;
+    border-radius: 9999px;
+    overflow: hidden;
+    position: relative;
+}
+
+.streak-progress-fill {
+    background: linear-gradient(90deg, #0284c7, #00e5ff);
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.4s ease;
+}
+
+.streak-countdown-box {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.countdown-icon {
+    font-size: 1.4rem;
+}
+
+.countdown-info {
+    flex: 1;
+}
+
+.countdown-label {
+    font-size: 0.78rem;
+    color: var(--gray-500);
+}
+
+.countdown-timer {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0284c7;
+    font-family: monospace, ui-monospace, sans-serif;
+    letter-spacing: 0.02em;
+}
+
+.streak-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.streak-stat-item {
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.6rem;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.streak-stat-item .stat-num {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--gray-800);
+}
+
+.streak-stat-item .stat-name {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+    margin-top: 0.15rem;
+}
+
+.streak-rule-note {
+    font-size: 0.8rem;
+    line-height: 1.45;
+    background: #f0fdf4;
+    border-left: 3px solid #16a34a;
+    padding: 0.6rem 0.8rem;
+    border-radius: 4px;
+    color: #15803d;
+}
+
+/* Celebration Modal */
+.celebration-card {
+    text-align: center;
+    max-width: 440px;
+    padding: 2rem 1.5rem;
+}
+
+.celebration-flame-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.celebration-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--blue-start);
+    margin-bottom: 0.4rem;
+}
+
+.celebration-desc {
+    font-size: 0.95rem;
+    color: var(--gray-700);
+    margin-bottom: 1rem;
+}
+
+.celebration-streak-pill {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-full);
+    border: 1px solid #7dd3fc;
+    margin-bottom: 0.85rem;
+}
+
+.celebration-tip {
+    font-size: 0.82rem;
+    color: var(--gray-500);
+    margin-bottom: 1.5rem;
+}
+
+.celebration-footer {
+    display: flex;
+    justify-content: center;
+}
+
+/* Header Responsive for Mobile */
+@media (max-width: 600px) {
+    .header-text h1 {
+        font-size: 1.05rem;
+    }
+
+    .header-container {
+        padding: 0 0.25rem;
+        gap: 0.4rem;
+    }
+
+    .header-actions {
+        gap: 0.35rem;
+    }
+
+    .header-streak-btn {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .header-pwa-btn {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+    }
+
+    .header-streak-btn .streak-days-label {
+        display: none; /* Ẩn chữ "ngày" trên điện thoại để tiết kiệm diện tích */
+    }
 }
