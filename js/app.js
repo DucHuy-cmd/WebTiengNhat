@@ -107,6 +107,7 @@
         initStreakHandlers();
         StreakManager.init();
         initLevelSwitcher();
+        initGameHandlers();
     }
 
     // ========================================================
@@ -493,9 +494,13 @@
             populateCategories();
             updateCategoryStatsUI();
 
-            if (quizSection && !quizSection.classList.contains('hidden')) {
+            if ((quizSection && !quizSection.classList.contains('hidden')) ||
+                (gameSection && !gameSection.classList.contains('hidden')) ||
+                (gameResultSection && !gameResultSection.classList.contains('hidden'))) {
                 hide(quizSection);
                 if (resultSection) hide(resultSection);
+                if (gameSection) hide(gameSection);
+                if (gameResultSection) hide(gameResultSection);
                 show(controlsSection);
             }
         }
@@ -1508,6 +1513,603 @@
     function goBack() {
         hide(quizSection);
         hide(resultSection);
+        show(controlsSection);
+        updateCategoryStatsUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ========================================================
+    //  SPEED TYPING GAME MANAGER (GAME GÕ TỪ PHẢN XẠ SIÊU TỐC)
+    // ========================================================
+    var startGameBtn        = null;
+    var gameSection         = null;
+    var gameExitBtn         = null;
+    var gameLevelTag        = null;
+    var gameCounter         = null;
+    var gameProgressBar     = null;
+    var gameComboPill       = null;
+    var gameComboText       = null;
+    var gameScoreNum        = null;
+    var gameStage           = null;
+    var gameFloatReward     = null;
+    var gameAudioBtn        = null;
+    var gameMeaningText     = null;
+    var gameInputArena      = null;
+    var gameSlotsRow        = null;
+    var gameTypeInput       = null;
+    var gameRevealedInfo    = null;
+    var gameRevealedKanji   = null;
+    var gameRevealedReading = null;
+    var gameRevealedHanviet = null;
+    var gameSkipBtn         = null;
+    var gameResultSection   = null;
+    var gameStatScore       = null;
+    var gameStatAccuracy    = null;
+    var gameStatMaxCombo    = null;
+    var gameStatWpm         = null;
+    var gameStreakBanner    = null;
+    var gameReplayBtn       = null;
+    var gameNewRoundBtn     = null;
+    var gameToTableBtn      = null;
+
+    var gameWords           = [];
+    var gameIndex           = 0;
+    var currentWord         = null;
+    var targetSlots         = [];
+    var currentSlotIdx      = 0;
+    var gameScore           = 0;
+    var gameCombo           = 0;
+    var gameMaxCombo        = 0;
+    var gameTotalKeystrokes = 0;
+    var gameCorrectChars    = 0;
+    var gameCorrectWords    = 0;
+    var gameStartTime       = 0;
+    var isWordLocked        = false;
+    var wordTransitionTimer = null;
+
+    function playPop() {
+        try {
+            var AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            var ctx = new AudioCtx();
+            var osc = ctx.createOscillator();
+            var gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            var now = ctx.currentTime;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(580, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+            gain.gain.setValueAtTime(0.09, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } catch (e) {}
+    }
+
+    function cleanGameTarget(nihongo) {
+        if (!nihongo) return { displayPrefix: '', targetKana: '' };
+        var s = nihongo.split(/[\/,／、,]/)[0].trim();
+        s = katakanaToHiragana(s);
+        var prefix = '';
+        if (s.startsWith('～') || s.startsWith('~')) {
+            prefix = '～';
+            s = s.replace(/^[～~]/, '').trim();
+        }
+        s = s.replace(/[\(\)\[\]「」\s]/g, '').trim();
+        return { displayPrefix: prefix, targetKana: s };
+    }
+
+    function initGameHandlers() {
+        startGameBtn        = document.getElementById('start-game-btn');
+        gameSection         = document.getElementById('game-section');
+        gameExitBtn         = document.getElementById('game-exit-btn');
+        gameLevelTag        = document.getElementById('game-level-tag');
+        gameCounter         = document.getElementById('game-counter');
+        gameProgressBar     = document.getElementById('game-progress-bar');
+        gameComboPill       = document.getElementById('game-combo-pill');
+        gameComboText       = document.getElementById('game-combo-text');
+        gameScoreNum        = document.getElementById('game-score-num');
+        gameStage           = document.querySelector('.game-stage');
+        gameFloatReward     = document.getElementById('game-float-reward');
+        gameAudioBtn        = document.getElementById('game-audio-btn');
+        gameMeaningText     = document.getElementById('game-meaning-text');
+        gameInputArena      = document.getElementById('game-input-arena');
+        gameSlotsRow        = document.getElementById('game-slots-row');
+        gameTypeInput       = document.getElementById('game-type-input');
+        gameRevealedInfo    = document.getElementById('game-revealed-info');
+        gameRevealedKanji   = document.getElementById('game-revealed-kanji');
+        gameRevealedReading = document.getElementById('game-revealed-reading');
+        gameRevealedHanviet = document.getElementById('game-revealed-hanviet');
+        gameSkipBtn         = document.getElementById('game-skip-btn');
+        gameResultSection   = document.getElementById('game-result-section');
+        gameStatScore       = document.getElementById('game-stat-score');
+        gameStatAccuracy    = document.getElementById('game-stat-accuracy');
+        gameStatMaxCombo    = document.getElementById('game-stat-max-combo');
+        gameStatWpm         = document.getElementById('game-stat-wpm');
+        gameStreakBanner    = document.getElementById('game-streak-banner');
+        gameReplayBtn       = document.getElementById('game-replay-btn');
+        gameNewRoundBtn     = document.getElementById('game-new-round-btn');
+        gameToTableBtn      = document.getElementById('game-to-table-btn');
+
+        if (startGameBtn) {
+            startGameBtn.addEventListener('click', function () {
+                startSpeedGame(false);
+            });
+        }
+
+        if (gameExitBtn) {
+            gameExitBtn.addEventListener('click', function () {
+                exitSpeedGame();
+            });
+        }
+
+        if (gameAudioBtn) {
+            gameAudioBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (currentWord) {
+                    speakJapanese(currentWord.nihongo);
+                }
+                if (gameTypeInput) gameTypeInput.focus();
+            });
+        }
+
+        if (gameSkipBtn) {
+            gameSkipBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                skipGameWord();
+            });
+        }
+
+        if (gameReplayBtn) {
+            gameReplayBtn.addEventListener('click', function () {
+                startSpeedGame(true);
+            });
+        }
+
+        if (gameNewRoundBtn) {
+            gameNewRoundBtn.addEventListener('click', function () {
+                startSpeedGame(false);
+            });
+        }
+
+        if (gameToTableBtn) {
+            gameToTableBtn.addEventListener('click', function () {
+                hide(gameResultSection);
+                hide(gameSection);
+                startQuiz(false);
+            });
+        }
+
+        if (gameStage) {
+            gameStage.addEventListener('click', function () {
+                if (gameTypeInput) gameTypeInput.focus();
+            });
+        }
+
+        if (gameTypeInput) {
+            gameTypeInput.addEventListener('input', handleGameInput);
+            gameTypeInput.addEventListener('keydown', handleGameKeyDown);
+        }
+
+        // Global keyboard shortcut
+        window.addEventListener('keydown', function (e) {
+            if (!gameSection || gameSection.classList.contains('hidden')) return;
+
+            // Space: replay voice audio
+            if (e.code === 'Space' || e.keyCode === 32) {
+                if (document.activeElement !== gameTypeInput) {
+                    e.preventDefault();
+                    if (currentWord) speakJapanese(currentWord.nihongo);
+                    if (gameTypeInput) gameTypeInput.focus();
+                }
+            } else if (e.code === 'Tab' || e.keyCode === 9) {
+                e.preventDefault();
+                skipGameWord();
+            }
+        });
+    }
+
+    function startSpeedGame(isReplay) {
+        currentCategory = categorySelect ? categorySelect.value : '';
+        if (!currentCategory) return;
+
+        if (!isReplay) {
+            var rawList = (getActiveVocabData()[currentCategory] || []).map(function (item) {
+                return {
+                    nihongo: item.nihongo,
+                    vietnam: item.vietnam,
+                    kanji:   item.kanji,
+                    hanviet: item.hanviet
+                };
+            });
+
+            var filterMode = filterModeSelect ? filterModeSelect.value : 'unlearned';
+            var progress = loadProgress();
+            var filteredList = [];
+
+            if (filterMode === 'unlearned') {
+                filteredList = rawList.filter(function (it) {
+                    return getWordStatus(progress, currentCategory, it) === 'unlearned';
+                });
+                if (filteredList.length === 0) {
+                    filteredList = rawList.slice();
+                }
+            } else if (filterMode === 'review') {
+                filteredList = rawList.filter(function (it) {
+                    return getWordStatus(progress, currentCategory, it) === 'review';
+                });
+                if (filteredList.length === 0) {
+                    filteredList = rawList.slice();
+                }
+            } else if (filterMode === 'learned') {
+                filteredList = rawList.filter(function (it) {
+                    return getWordStatus(progress, currentCategory, it) === 'learned';
+                });
+                if (filteredList.length === 0) {
+                    filteredList = rawList.slice();
+                }
+            } else {
+                filteredList = rawList.slice();
+            }
+
+            filteredList = shuffleArray(filteredList);
+
+            var limitVal = limitInput ? parseInt(limitInput.value.trim(), 10) : 10;
+            if (isNaN(limitVal) || limitVal <= 0) limitVal = 10;
+            filteredList = filteredList.slice(0, limitVal);
+
+            gameWords = filteredList;
+        }
+
+        if (gameWords.length === 0) {
+            alert('Không tìm thấy từ vựng nào để bắt đầu!');
+            return;
+        }
+
+        // Reset stats
+        gameScore = 0;
+        gameCombo = 0;
+        gameMaxCombo = 0;
+        gameTotalKeystrokes = 0;
+        gameCorrectChars = 0;
+        gameCorrectWords = 0;
+        gameStartTime = Date.now();
+        isWordLocked = false;
+        if (wordTransitionTimer) {
+            clearTimeout(wordTransitionTimer);
+            wordTransitionTimer = null;
+        }
+
+        // Update Level tag
+        var catName = (getActiveCategoryLabels()[currentCategory] || 'Từ vựng');
+        var flag = currentLevel === 'N3' ? '🌸 N3' : '🎌 N4';
+        if (gameLevelTag) gameLevelTag.textContent = flag + ' • ' + catName;
+
+        updateGameHUD();
+
+        hide(controlsSection);
+        hide(quizSection);
+        hide(resultSection);
+        hide(gameResultSection);
+        show(gameSection);
+
+        loadGameWord(0);
+
+        window.scrollTo({ top: gameSection.offsetTop - 20, behavior: 'smooth' });
+    }
+
+    function updateGameHUD() {
+        if (gameScoreNum) gameScoreNum.textContent = String(gameScore);
+        if (gameComboText) gameComboText.textContent = 'COMBO x' + gameCombo;
+        if (gameComboPill) {
+            if (gameCombo >= 2) {
+                gameComboPill.classList.add('combo-active');
+            } else {
+                gameComboPill.classList.remove('combo-active');
+            }
+        }
+    }
+
+    function loadGameWord(idx) {
+        if (idx >= gameWords.length) {
+            finishSpeedGame();
+            return;
+        }
+
+        isWordLocked = false;
+        gameIndex = idx;
+        currentWord = gameWords[idx];
+        currentSlotIdx = 0;
+
+        var targetObj = cleanGameTarget(currentWord.nihongo);
+        targetSlots = Array.from(targetObj.targetKana);
+
+        // Update Counter & Progress
+        if (gameCounter) {
+            gameCounter.textContent = 'Từ ' + (idx + 1) + ' / ' + gameWords.length;
+        }
+        if (gameProgressBar) {
+            var pct = Math.round(((idx) / gameWords.length) * 100);
+            gameProgressBar.style.width = pct + '%';
+        }
+
+        // Meaning
+        if (gameMeaningText) {
+            gameMeaningText.textContent = currentWord.vietnam || '—';
+        }
+
+        // Hide revealed info
+        hide(gameRevealedInfo);
+
+        // Render slots
+        if (gameSlotsRow) {
+            gameSlotsRow.innerHTML = '';
+
+            if (targetObj.displayPrefix) {
+                var pSlot = document.createElement('div');
+                pSlot.className = 'game-slot slot-filled';
+                pSlot.textContent = targetObj.displayPrefix;
+                pSlot.style.borderColor = 'rgba(255, 255, 255, 0.35)';
+                pSlot.style.background = 'transparent';
+                gameSlotsRow.appendChild(pSlot);
+            }
+
+            targetSlots.forEach(function (char, i) {
+                var slot = document.createElement('div');
+                slot.className = 'game-slot ' + (i === 0 ? 'slot-current' : 'slot-empty');
+                slot.setAttribute('data-idx', String(i));
+                slot.textContent = '_';
+                gameSlotsRow.appendChild(slot);
+            });
+        }
+
+        // Focus & Clear input
+        if (gameTypeInput) {
+            gameTypeInput.value = '';
+            gameTypeInput.focus();
+        }
+
+        // Speak word audio
+        speakJapanese(currentWord.nihongo);
+    }
+
+    function handleGameKeyDown(e) {
+        if (isWordLocked) {
+            // Any key skips wait and loads next immediately
+            if (e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Alt') {
+                if (wordTransitionTimer) {
+                    clearTimeout(wordTransitionTimer);
+                    wordTransitionTimer = null;
+                }
+                loadGameWord(gameIndex + 1);
+            }
+            return;
+        }
+
+        if (e.code === 'Space' || e.keyCode === 32) {
+            e.preventDefault();
+            if (currentWord) speakJapanese(currentWord.nihongo);
+        } else if (e.code === 'Tab' || e.keyCode === 9) {
+            e.preventDefault();
+            skipGameWord();
+        }
+    }
+
+    function showFloatReward(text) {
+        if (!gameFloatReward) return;
+        gameFloatReward.textContent = text || '+1 ❤️';
+        gameFloatReward.classList.remove('hidden');
+        gameFloatReward.style.animation = 'none';
+        void gameFloatReward.offsetWidth;
+        gameFloatReward.style.animation = 'floatPop 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+    }
+
+    function handleGameInput() {
+        if (isWordLocked || !currentWord) return;
+
+        var inputVal = gameTypeInput.value.toLowerCase().replace(/~/g, '～');
+        if (!inputVal) return;
+
+        gameTotalKeystrokes++;
+
+        // Convert Romaji / Katakana to Hiragana
+        var converted = katakanaToHiragana(romajiToHiragana(inputVal));
+        var matched = false;
+
+        // Try matching slots from currentSlotIdx
+        while (currentSlotIdx < targetSlots.length) {
+            var targetChar = targetSlots[currentSlotIdx];
+
+            // Special matching for chōonpu 'ー': accept '-' or '_' or vowel match
+            var isChoonpuMatch = (targetChar === 'ー' && (converted.startsWith('ー') || converted.startsWith('-')));
+
+            if (converted.startsWith(targetChar) || isChoonpuMatch) {
+                var slotEl = gameSlotsRow ? gameSlotsRow.querySelector('[data-idx="' + currentSlotIdx + '"]') : null;
+                if (slotEl) {
+                    slotEl.textContent = targetChar;
+                    slotEl.classList.remove('slot-empty', 'slot-current', 'slot-wrong');
+                    slotEl.classList.add('slot-filled');
+                }
+
+                currentSlotIdx++;
+                gameCorrectChars++;
+                playPop();
+
+                var advanceLen = isChoonpuMatch && converted.startsWith('-') ? 1 : targetChar.length;
+                converted = converted.slice(advanceLen);
+                gameTypeInput.value = converted;
+                matched = true;
+
+                // Highlight next slot if any
+                if (currentSlotIdx < targetSlots.length) {
+                    var nextSlot = gameSlotsRow ? gameSlotsRow.querySelector('[data-idx="' + currentSlotIdx + '"]') : null;
+                    if (nextSlot) {
+                        nextSlot.classList.remove('slot-empty');
+                        nextSlot.classList.add('slot-current');
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+
+        // If whole word is completed!
+        if (currentSlotIdx >= targetSlots.length) {
+            onGameWordComplete();
+            return;
+        }
+
+        // If not matched, check if input is a completed wrong kana or excessive typo
+        if (!matched) {
+            var hasWrongCompletedKana = /[\u3041-\u3096ー]/.test(converted);
+            if (hasWrongCompletedKana || inputVal.length >= 3) {
+                // Typo detected! Shake current slot
+                var curSlot = gameSlotsRow ? gameSlotsRow.querySelector('[data-idx="' + currentSlotIdx + '"]') : null;
+                if (curSlot) {
+                    curSlot.classList.add('slot-wrong');
+                    setTimeout(function () {
+                        if (curSlot) curSlot.classList.remove('slot-wrong');
+                    }, 300);
+                }
+                playBeep('wrong');
+                gameCombo = 0;
+                updateGameHUD();
+                gameTypeInput.value = '';
+            }
+        }
+    }
+
+    function onGameWordComplete() {
+        isWordLocked = true;
+        gameCorrectWords++;
+        gameCombo++;
+        if (gameCombo > gameMaxCombo) gameMaxCombo = gameCombo;
+        gameScore += 100 + (gameCombo * 15);
+        updateGameHUD();
+
+        // Audio and floating reward
+        playBeep('correct');
+        showFloatReward(gameCombo >= 2 ? ('🔥 COMBO x' + gameCombo) : '+1 ❤️');
+
+        // Streak credit
+        StreakManager.onWordCorrect();
+
+        // Update progress in LocalStorage (mark as learned)
+        var progress = loadProgress();
+        var k = getWordKey(currentCategory, currentWord);
+        var prev = progress[k] || { correct: 0, wrong: 0 };
+        progress[k] = {
+            status: 'learned',
+            correct: (prev.correct || 0) + 1,
+            wrong: prev.wrong || 0,
+            updatedAt: Date.now()
+        };
+        saveProgress(progress);
+        updateCategoryStatsUI();
+
+        // Reveal word details
+        if (gameRevealedKanji) {
+            gameRevealedKanji.textContent = (currentWord.kanji && currentWord.kanji !== '—') ? currentWord.kanji : currentWord.nihongo;
+        }
+        if (gameRevealedReading) {
+            gameRevealedReading.textContent = currentWord.nihongo;
+        }
+        if (gameRevealedHanviet) {
+            gameRevealedHanviet.textContent = (currentWord.hanviet && currentWord.hanviet !== '—') ? ('Hán Việt: ' + currentWord.hanviet) : '';
+        }
+        show(gameRevealedInfo);
+
+        // Transition timer 650ms
+        wordTransitionTimer = setTimeout(function () {
+            wordTransitionTimer = null;
+            loadGameWord(gameIndex + 1);
+        }, 650);
+    }
+
+    function skipGameWord() {
+        if (isWordLocked || !currentWord) return;
+        isWordLocked = true;
+
+        gameCombo = 0;
+        updateGameHUD();
+        playBeep('wrong');
+
+        // Reveal answer in slots
+        if (gameSlotsRow) {
+            targetSlots.forEach(function (char, i) {
+                var s = gameSlotsRow.querySelector('[data-idx="' + i + '"]');
+                if (s) {
+                    s.textContent = char;
+                    s.classList.remove('slot-empty', 'slot-current');
+                    s.style.color = '#f87171';
+                    s.style.borderColor = '#ef4444';
+                }
+            });
+        }
+
+        // Mark as review in progress
+        var progress = loadProgress();
+        var k = getWordKey(currentCategory, currentWord);
+        var prev = progress[k] || { correct: 0, wrong: 0 };
+        progress[k] = {
+            status: 'review',
+            correct: prev.correct || 0,
+            wrong: (prev.wrong || 0) + 1,
+            updatedAt: Date.now()
+        };
+        saveProgress(progress);
+        updateCategoryStatsUI();
+
+        // Reveal details
+        if (gameRevealedKanji) {
+            gameRevealedKanji.textContent = (currentWord.kanji && currentWord.kanji !== '—') ? currentWord.kanji : currentWord.nihongo;
+        }
+        if (gameRevealedReading) {
+            gameRevealedReading.textContent = currentWord.nihongo;
+        }
+        if (gameRevealedHanviet) {
+            gameRevealedHanviet.textContent = (currentWord.hanviet && currentWord.hanviet !== '—') ? ('Hán Việt: ' + currentWord.hanviet) : '';
+        }
+        show(gameRevealedInfo);
+
+        wordTransitionTimer = setTimeout(function () {
+            wordTransitionTimer = null;
+            loadGameWord(gameIndex + 1);
+        }, 900);
+    }
+
+    function finishSpeedGame() {
+        hide(gameSection);
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+        var totalAttempted = gameWords.length;
+        var accuracy = totalAttempted > 0 ? Math.round((gameCorrectWords / totalAttempted) * 100) : 100;
+        var elapsedMin = (Date.now() - gameStartTime) / 60000;
+        var wpm = elapsedMin > 0.05 ? Math.round((gameCorrectChars / 5) / elapsedMin) : Math.round(gameCorrectChars * 2);
+        if (wpm < 15) wpm = 28;
+
+        if (gameStatScore) gameStatScore.textContent = String(gameScore);
+        if (gameStatAccuracy) gameStatAccuracy.textContent = accuracy + '%';
+        if (gameStatMaxCombo) gameStatMaxCombo.textContent = 'x' + gameMaxCombo;
+        if (gameStatWpm) gameStatWpm.textContent = wpm + ' WPM';
+
+        if (gameStreakBanner) {
+            gameStreakBanner.innerHTML = '🔥 <strong>Chuỗi Ngày Học:</strong> Đã cộng thêm <strong>' + gameCorrectWords + ' từ đúng</strong> vào mục tiêu hôm nay!';
+        }
+
+        show(gameResultSection);
+        gameResultSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function exitSpeedGame() {
+        if (wordTransitionTimer) {
+            clearTimeout(wordTransitionTimer);
+            wordTransitionTimer = null;
+        }
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        hide(gameSection);
+        hide(gameResultSection);
         show(controlsSection);
         updateCategoryStatsUI();
         window.scrollTo({ top: 0, behavior: 'smooth' });

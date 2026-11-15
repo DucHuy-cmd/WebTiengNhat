@@ -9,3 +9,6 @@ Thumbs.db
 *.yaml
 *.csv
 __pycache__/
+scratch/
+*.mp4
+

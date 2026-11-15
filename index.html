@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=8">
+    <link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
     <header class="app-header">
@@ -159,9 +159,12 @@
                 </label>
             </div>
 
-            <div class="action-center">
+            <div class="action-center mode-actions-group">
                 <button id="start-btn" class="btn btn-primary btn-xl">
-                    <span class="btn-icon">🚀</span> Bắt Đầu Học Ngay
+                    <span class="btn-icon">📋</span> Học Bảng 4 Cột
+                </button>
+                <button id="start-game-btn" class="btn btn-game btn-xl">
+                    <span class="btn-icon">⚡</span> Chơi Game Gõ Phím
                 </button>
             </div>
         </section>
@@ -220,6 +223,124 @@
                 </button>
                 <button id="show-answers-btn" class="btn btn-ghost btn-lg">
                     <span class="btn-icon">👁️</span> Xem Đáp Án
+                </button>
+            </div>
+        </section>
+
+        <!-- KHU VỰC GAME GÕ TỪ PHẢN XẠ SIÊU TỐC (SPEED TYPING ARENA) -->
+        <section id="game-section" class="game-section hidden">
+            <!-- Game HUD Header -->
+            <div class="game-hud">
+                <div class="game-hud-left">
+                    <button id="game-exit-btn" class="btn btn-sm btn-ghost" title="Thoát về bảng cài đặt">
+                        ← Thoát Game
+                    </button>
+                    <div class="game-level-tag" id="game-level-tag">🎌 N4 • Danh từ</div>
+                </div>
+                <div class="game-hud-center">
+                    <div class="game-progress-info">
+                        <span id="game-counter">Từ 1 / 10</span>
+                        <div class="game-progress-track">
+                            <div class="game-progress-bar" id="game-progress-bar" style="width: 10%;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="game-hud-right">
+                    <div class="game-combo-pill" id="game-combo-pill">
+                        <span class="combo-icon">🔥</span>
+                        <span class="combo-text" id="game-combo-text">COMBO x0</span>
+                    </div>
+                    <div class="game-score-pill">
+                        <span class="score-icon">✨</span>
+                        <span id="game-score-num">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Arena Canvas / Stage -->
+            <div class="game-stage">
+                <!-- Floating celebration message (+1 ❤️, COMBO x...) -->
+                <div class="game-float-reward hidden" id="game-float-reward">+1 ❤️</div>
+
+                <!-- Main Target Word Display -->
+                <div class="game-target-card">
+                    <!-- Audio Speak Button -->
+                    <button type="button" id="game-audio-btn" class="game-speaker-btn" title="Nghe lại phát âm (Phím tắt: Space hoặc Ctrl)">
+                        <span class="speaker-wave-anim">🔊</span>
+                        <span class="speaker-tip-text">Nghe lại [Space]</span>
+                    </button>
+
+                    <!-- Vietnamese Meaning (To, rõ ràng) -->
+                    <div class="game-meaning-text" id="game-meaning-text">dây, sợi dây</div>
+
+                    <!-- Glowing Input Slot Box (như trong video Kitsumi) -->
+                    <div class="game-input-arena" id="game-input-arena">
+                        <!-- Dynamic Character Slots (e.g. [ ひ ] [ _ ]) -->
+                        <div class="game-slots-row" id="game-slots-row">
+                            <!-- Rendered dynamically -->
+                        </div>
+                        <!-- Hidden / transparent input to capture mobile keyboard & typing -->
+                        <input type="text" id="game-type-input" class="game-hidden-type-input" autocomplete="off" autocapitalize="off" spellcheck="false" autofocus>
+                    </div>
+
+                    <!-- Revealed Word Info (bật ra ngay khi gõ xong từ) -->
+                    <div class="game-revealed-info hidden" id="game-revealed-info">
+                        <div class="revealed-kanji" id="game-revealed-kanji">紐</div>
+                        <div class="revealed-sub" id="game-revealed-sub">
+                            <span class="revealed-reading" id="game-revealed-reading">ひも</span>
+                            <span class="revealed-hanviet" id="game-revealed-hanviet">Hán Việt: Nữu</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Hint & Skip -->
+                <div class="game-footer-controls">
+                    <span class="game-hint-text">💡 <em>Gõ Romaji hoặc Hiragana trên bàn phím • Nhấn [Space] nghe lại phát âm</em></span>
+                    <button type="button" id="game-skip-btn" class="btn-text-ghost" title="Bỏ qua câu này">Bỏ qua câu này →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- MÀN HÌNH TỔNG KẾT GAME (GAME RESULT) -->
+        <section id="game-result-section" class="card game-result-card hidden">
+            <div class="game-result-header">
+                <div class="result-badge-anim">🏆</div>
+                <h2 id="game-result-title">XUẤT SẮC! HOÀN THÀNH LƯỢT CHƠI!</h2>
+                <p id="game-result-sub">Bạn vừa rèn luyện phản xạ gõ từ vựng tiếng Nhật siêu tốc!</p>
+            </div>
+
+            <div class="game-stats-grid">
+                <div class="g-stat-box">
+                    <div class="g-stat-val" id="game-stat-score">1000</div>
+                    <div class="g-stat-lbl">✨ Tổng Điểm</div>
+                </div>
+                <div class="g-stat-box">
+                    <div class="g-stat-val" id="game-stat-accuracy">100%</div>
+                    <div class="g-stat-lbl">🎯 Độ Chính Xác</div>
+                </div>
+                <div class="g-stat-box">
+                    <div class="g-stat-val" id="game-stat-max-combo">x10</div>
+                    <div class="g-stat-lbl">🔥 Chuỗi Combo Dài Nhất</div>
+                </div>
+                <div class="g-stat-box">
+                    <div class="g-stat-val" id="game-stat-wpm">42 WPM</div>
+                    <div class="g-stat-lbl">⚡ Tốc Độ Gõ</div>
+                </div>
+            </div>
+
+            <div class="game-streak-contribution-banner" id="game-streak-banner">
+                🔥 <strong>Chuỗi Ngày Học:</strong> Đã cộng thêm <strong>10 từ đúng</strong> vào mục tiêu hôm nay!
+            </div>
+
+            <div class="game-result-actions">
+                <button type="button" id="game-replay-btn" class="btn btn-primary btn-lg">
+                    🔁 Chơi Lại Lượt Này
+                </button>
+                <button type="button" id="game-new-round-btn" class="btn btn-secondary btn-lg">
+                    ⚡ Bắt Đầu Lượt Mới
+                </button>
+                <button type="button" id="game-to-table-btn" class="btn btn-outline btn-lg">
+                    📋 Chuyển Sang Bảng 4 Cột
                 </button>
             </div>
         </section>
@@ -380,9 +501,9 @@
     </div>
 
     <!-- Scripts -->
-    <script src="js/data.js?v=8"></script>
-    <script src="js/data_n3.js?v=8"></script>
-    <script src="js/app.js?v=8"></script>
+    <script src="js/data.js?v=9"></script>
+    <script src="js/data_n3.js?v=9"></script>
+    <script src="js/app.js?v=9"></script>
 
     <!-- PWA Service Worker Registration -->
     <script>
