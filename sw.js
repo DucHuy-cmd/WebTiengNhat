@@ -3,7 +3,7 @@
    Supports 100% Offline Learning with Network-First Strategy
    ======================================================== */
 
-const CACHE_NAME = 'webtiengnhat-v9';
+const CACHE_NAME = 'webtiengnhat-v10';
 
 const STATIC_ASSETS = [
     './',
@@ -49,6 +49,15 @@ self.addEventListener('activate', (event) => {
 // Fetch: Network First, falling back to cache (Optimal for instant updates + offline support)
 self.addEventListener('fetch', (event) => {
     if (event.request.method !== 'GET') return;
+
+    // Tuyệt đối không can thiệp vào request âm thanh/video hoặc domain ngoài (Google TTS, Google Fonts)
+    // để tránh lỗi WebKit iOS Safari làm mất tiếng âm thanh trên iPhone
+    if (!event.request.url.startsWith(self.location.origin)) {
+        return;
+    }
+    if (event.request.destination === 'audio' || event.request.destination === 'video') {
+        return;
+    }
 
     event.respondWith(
         fetch(event.request)

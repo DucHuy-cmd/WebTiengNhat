@@ -755,17 +755,161 @@
     }
 
     // ========================================================
-    //  Speech Synthesis (Native Pronunciation)
+    //  Multi-Tier Audio Engine (Google TTS + Web Speech API Fallback)
+    //  Tối ưu 100% âm thanh chuẩn tiếng Nhật trên cả iPhone và Android
     // ========================================================
 
+    var sharedAudioPlayer = null;
+    var isAudioUnlocked = false;
+
+    try {
+        sharedAudioPlayer = new Audio();
+        sharedAudioPlayer.preload = 'auto';
+    } catch (e) {
+        console.warn('HTML5 Audio not available:', e);
+    }
+
+    // Cơ chế mở khóa âm thanh trên điện thoại di động (Mobile Autoplay Unlock)
+    function unlockMobileAudio() {
+        if (isAudioUnlocked) return;
+        isAudioUnlocked = true;
+
+        if (sharedAudioPlayer) {
+            // Phát 1 frame âm thanh ngắn để iOS Safari & Android cấp quyền phát tự động
+            sharedAudioPlayer.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==';
+            var p = sharedAudioPlayer.play();
+            if (p !== undefined) {
+                p.then(function () {
+                    sharedAudioPlayer.pause();
+                    sharedAudioPlayer.currentTime = 0;
+                }).catch(function () {});
+            }
+        }
+
+        if ('speechSynthesis' in window) {
+            try {
+                var dummy = new SpeechSynthesisUtterance('');
+                dummy.volume = 0;
+                window.speechSynthesis.speak(dummy);
+            } catch (e) {}
+        }
+
+        document.removeEventListener('touchstart', unlockMobileAudio, true);
+        document.removeEventListener('touchend', unlockMobileAudio, true);
+        document.removeEventListener('click', unlockMobileAudio, true);
+    }
+
+    document.addEventListener('touchstart', unlockMobileAudio, true);
+    document.addEventListener('touchend', unlockMobileAudio, true);
+    document.addEventListener('click', unlockMobileAudio, true);
+
+    function cleanJapaneseForSpeech(text) {
+        if (!text) return '';
+        var s = text.replace(/^[～~]/, '').trim();
+        s = s.split(/[\/,／、]/)[0].trim();
+        s = s.replace(/[\(\)\[\]「」\s]/g, '').trim();
+        return s;
+    }
+
+    function getJapaneseVoice() {
+        if (!('speechSynthesis' in window)) return null;
+        var voices = window.speechSynthesis.getVoices() || [];
+        for (var i = 0; i < voices.length; i++) {
+            var v = voices[i];
+            var lang = (v.lang || '').toLowerCase();
+            if (lang === 'ja-jp' || lang === 'ja_jp' || lang.indexOf('ja') === 0) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = function () {
+            // Cập nhật danh sách voices khi hệ điều hành tải xong
+            getJapaneseVoice();
+        };
+    }
+
+    function playOnlineJapaneseAudio(cleanText, onFail) {
+        if (!sharedAudioPlayer || navigator.onLine === false) {
+            if (onFail) onFail();
+            return;
+        }
+
+        var encoded = encodeURIComponent(cleanText);
+        var googleUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=ja&client=tw-ob&q=' + encoded;
+        var youdaoUrl = 'https://dict.youdao.com/dictvoice?audio=' + encoded + '&le=jap';
+
+        try {
+            sharedAudioPlayer.pause();
+            sharedAudioPlayer.currentTime = 0;
+            sharedAudioPlayer.src = googleUrl;
+
+            var p = sharedAudioPlayer.play();
+            if (p !== undefined) {
+                p.catch(function () {
+                    try {
+                        sharedAudioPlayer.src = youdaoUrl;
+                        var p2 = sharedAudioPlayer.play();
+                        if (p2 !== undefined) {
+                            p2.catch(function () {
+                                if (onFail) onFail();
+                            });
+                        }
+                    } catch (e2) {
+                        if (onFail) onFail();
+                    }
+                });
+            }
+        } catch (e) {
+            if (onFail) onFail();
+        }
+    }
+
+    function playSpeechSynthesis(cleanText, jaVoice, onFail) {
+        if (!('speechSynthesis' in window)) {
+            if (onFail) onFail();
+            return;
+        }
+        try {
+            window.speechSynthesis.cancel();
+            var utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.88;
+            if (jaVoice) {
+                utterance.voice = jaVoice;
+            }
+            if (onFail) {
+                utterance.onerror = function () {
+                    onFail();
+                };
+            }
+            window.speechSynthesis.speak(utterance);
+        } catch (e) {
+            if (onFail) onFail();
+        }
+    }
+
     function speakJapanese(text) {
-        if (!('speechSynthesis' in window)) return;
-        window.speechSynthesis.cancel();
-        var cleanText = text.replace(/^[～~]/, '').trim();
-        var utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.lang = 'ja-JP';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
+        if (!text) return;
+        var cleanText = cleanJapaneseForSpeech(text);
+        if (!cleanText) return;
+
+        var jaVoice = getJapaneseVoice();
+
+        // Nếu máy có sẵn gói giọng tiếng Nhật (như máy tính hoặc điện thoại đã bật voice tiếng Nhật)
+        if (jaVoice) {
+            playSpeechSynthesis(cleanText, jaVoice, function () {
+                playOnlineJapaneseAudio(cleanText);
+            });
+            return;
+        }
+
+        // Nếu máy chưa có gói tiếng Nhật (đa số điện thoại di động) -> phát qua Online TTS chất lượng cao
+        playOnlineJapaneseAudio(cleanText, function () {
+            playSpeechSynthesis(cleanText, null);
+        });
     }
 
     // ========================================================
@@ -894,6 +1038,9 @@
             var AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
             var ctx = new AudioContext();
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
             var osc = ctx.createOscillator();
             var gain = ctx.createGain();
             osc.connect(gain);
@@ -1572,6 +1719,9 @@
             var AudioCtx = window.AudioContext || window.webkitAudioContext;
             if (!AudioCtx) return;
             var ctx = new AudioCtx();
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
             var osc = ctx.createOscillator();
             var gain = ctx.createGain();
             osc.connect(gain);
@@ -2081,6 +2231,12 @@
 
     function finishSpeedGame() {
         hide(gameSection);
+        if (sharedAudioPlayer) {
+            try {
+                sharedAudioPlayer.pause();
+                sharedAudioPlayer.currentTime = 0;
+            } catch (e) {}
+        }
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 
         var totalAttempted = gameWords.length;
@@ -2106,6 +2262,12 @@
         if (wordTransitionTimer) {
             clearTimeout(wordTransitionTimer);
             wordTransitionTimer = null;
+        }
+        if (sharedAudioPlayer) {
+            try {
+                sharedAudioPlayer.pause();
+                sharedAudioPlayer.currentTime = 0;
+            } catch (e) {}
         }
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         hide(gameSection);
